@@ -1,0 +1,21 @@
+{
+  "name": "zh-converter",
+  "version": "1.0.0",
+  "description": "繁簡轉換 API（Node.js + Express + opencc-js）",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.7",
+    "express": "^5.3.0",
+    "opencc-js": "^1.4.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

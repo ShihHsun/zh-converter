@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>繁簡轉換</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>繁簡轉換</h1>
+
+    <form id="convert-form">
+      <label for="direction">轉換方向</label>
+      <select id="direction" name="direction">
+        <!-- 預設選項；頁面載入後會改用 API 回傳的清單 -->
+        <option value="s2t">簡體 → 繁體</option>
+        <option value="s2twp">簡體 → 繁體（台灣用詞）</option>
+        <option value="t2s">繁體 → 簡體</option>
+      </select>
+
+      <div class="panes">
+        <div class="pane">
+          <label for="input">原文</label>
+          <textarea id="input" rows="10" placeholder="請輸入要轉換的文字…"></textarea>
+        </div>
+        <div class="pane">
+          <label for="output">結果</label>
+          <textarea id="output" rows="10" readonly></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="convert-btn">轉換</button>
+        <button type="button" id="copy-btn" class="secondary">複製結果</button>
+      </div>
+
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
