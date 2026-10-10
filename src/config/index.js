@@ -12,6 +12,8 @@ module.exports = {
   port: toInt(process.env.PORT, 3000),
   corsOrigin: process.env.CORS_ORIGIN || '*',
   maxTextLength: toInt(process.env.MAX_TEXT_LENGTH, 10000),
+  maxCustomDictEntries: toInt(process.env.MAX_CUSTOM_DICT_ENTRIES, 100),
+  maxCompareConfigs: toInt(process.env.MAX_COMPARE_CONFIGS, 5),
   rateLimit: {
     windowMs: toInt(process.env.RATE_LIMIT_WINDOW_MS, 60 * 1000),
     max: toInt(process.env.RATE_LIMIT_MAX, 30),

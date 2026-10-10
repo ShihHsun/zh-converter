@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const config = require('./config');
 const healthRouter = require('./routes/health');
+const configsRouter = require('./routes/configs');
 const convertRouter = require('./routes/convert');
 const createRateLimiter = require('./middlewares/rateLimiter');
 const notFound = require('./middlewares/notFound');
@@ -21,8 +22,10 @@ app.use(express.static(path.join(__dirname, '..', 'public'))); // 提供前端�
 
 // ===== 2. 路由 =====
 app.use('/health', healthRouter);
-// 頻率限制只套用在 API，不影響靜態檔案與健康檢查
-app.use('/api/convert', createRateLimiter(), convertRouter);
+// 頻率限制只套用在 /api 底下，不影響靜態檔案與健康檢查
+app.use('/api', createRateLimiter());
+app.use('/api/configs', configsRouter);
+app.use('/api/convert', convertRouter);
 
 // ===== 3. 收尾：404 與統一錯誤處理（必須放在所有路由之後） =====
 app.use(notFound);

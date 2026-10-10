@@ -50,7 +50,7 @@ textarea {
 }
 
 select {
-  max-width: 280px;
+  max-width: 360px;
   margin-bottom: 16px;
 }
 
@@ -122,4 +122,166 @@ button.secondary {
 
 .message.success {
   color: var(--success);
+}
+
+.custom-dict {
+  margin-top: 16px;
+}
+
+.custom-dict summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.hint {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+/* ===== 模式切換 ===== */
+
+/* 依 data-mode 隱藏另一個模式專屬的區塊 */
+[data-mode="single"] .only-compare,
+[data-mode="compare"] .only-single {
+  display: none;
+}
+
+/* 比較模式沒有右側結果欄，原文改為佔滿整列 */
+[data-mode="compare"] .panes {
+  grid-template-columns: 1fr;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mode-switch label {
+  margin: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.mode-switch label:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.mode-switch input {
+  /* 隱藏原生圓點，用整個標籤當按鈕 */
+  position: absolute;
+  opacity: 0;
+}
+
+.mode-switch label:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ===== 比較模式：設定勾選 ===== */
+
+.config-picker {
+  margin-bottom: 16px;
+}
+
+.config-picker legend {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 4px 16px;
+}
+
+.config-grid label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.config-grid label:has(input:disabled) {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* ===== 比較模式：結果卡片 ===== */
+
+.compare-results {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.result-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.result-card header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--border);
+}
+
+.result-card h2 {
+  margin: 0;
+  font-size: 1em;
+}
+
+.result-card .badge {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+.result-card .copy {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: 0.9em;
+}
+
+.result-text {
+  margin: 0;
+  font: inherit; /* <pre> 預設是等寬小字，改回與頁面相同的字型 */
+  padding: 12px;
+  white-space: pre-wrap; /* 保留原文的換行與空白 */
+  word-break: break-word;
+  max-height: 320px;
+  overflow: auto;
+}
+
+/* 與基準結果不同的字 */
+.result-text mark {
+  background: #fff3b0;
+  color: inherit;
+  border-radius: 2px;
 }

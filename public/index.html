@@ -5,38 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>繁簡轉換</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:," /><!-- 空白圖示，避免瀏覽器請求 /favicon.ico 得到 404 -->
 </head>
 <body>
-  <main class="container">
+  <!-- data-mode 決定目前顯示哪些區塊：single（單一轉換）或 compare（比較模式） -->
+  <main id="app" class="container" data-mode="single">
     <h1>繁簡轉換</h1>
 
     <form id="convert-form">
-      <label for="direction">轉換方向</label>
-      <select id="direction" name="direction">
-        <!-- 預設選項；頁面載入後會改用 API 回傳的清單 -->
-        <option value="s2t">簡體 → 繁體</option>
-        <option value="s2twp">簡體 → 繁體（台灣用詞）</option>
-        <option value="t2s">繁體 → 簡體</option>
-      </select>
+      <fieldset class="mode-switch">
+        <legend class="visually-hidden">模式</legend>
+        <label><input type="radio" name="mode" value="single" checked /> 單一轉換</label>
+        <label><input type="radio" name="mode" value="compare" /> 比較模式</label>
+      </fieldset>
+
+      <!-- 單一轉換：下拉選單選一個設定 -->
+      <div class="only-single">
+        <label for="config">轉換設定</label>
+        <select id="config" name="config">
+          <!-- 頁面載入後由 GET /api/configs 填入選項 -->
+          <option value="s2twp">簡體 → 台灣正體（轉換地域用詞）</option>
+        </select>
+      </div>
+
+      <!-- 比較模式：勾選多個設定 -->
+      <fieldset class="only-compare config-picker">
+        <legend>選擇要比較的設定（<span id="compare-count">0</span> / <span id="compare-max">5</span>）</legend>
+        <div id="compare-configs" class="config-grid"></div>
+      </fieldset>
 
       <div class="panes">
         <div class="pane">
           <label for="input">原文</label>
           <textarea id="input" rows="10" placeholder="請輸入要轉換的文字…"></textarea>
         </div>
-        <div class="pane">
+        <div class="pane only-single">
           <label for="output">結果</label>
           <textarea id="output" rows="10" readonly></textarea>
         </div>
       </div>
 
+      <details class="custom-dict">
+        <summary>自訂詞庫（選填）</summary>
+        <p class="hint">每行一組，原詞與目標詞以空白分隔，例如：<code>鼠标 滑鼠</code></p>
+        <textarea id="custom-dict" rows="4" placeholder="鼠标 滑鼠"></textarea>
+      </details>
+
       <div class="actions">
         <button type="submit" id="convert-btn">轉換</button>
-        <button type="button" id="copy-btn" class="secondary">複製結果</button>
+        <button type="button" id="copy-btn" class="secondary only-single">複製結果</button>
       </div>
 
       <p id="message" class="message" role="status" aria-live="polite"></p>
     </form>
+
+    <!-- 比較結果：每個設定一張卡片，與第一個（基準）不同的字會被標示 -->
+    <section id="compare-results" class="compare-results only-compare" aria-live="polite"></section>
   </main>
 
   <script src="main.js"></script>

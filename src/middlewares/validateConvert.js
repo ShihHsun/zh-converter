@@ -1,34 +1,102 @@
 const AppError = require('../utils/AppError');
 const config = require('../config');
-const { getSupportedDirections } = require('../services/converterService');
+const { getConfigIds } = require('../services/converterService');
 
-// 驗證 POST /api/convert 的請求內容
-// 不合法時丟出 AppError，交由 errorHandler 統一回應
-function validateConvert(req, res, next) {
-  const { text, direction } = req.body || {};
+// 單一詞條的最大長度，避免過長的詞條拖慢轉換
+const MAX_DICT_WORD_LENGTH = 50;
 
+// ===== 共用的檢查函式：發現問題時回傳 AppError，沒問題回傳 null =====
+
+function checkText(text) {
   if (typeof text !== 'string' || text.trim() === '') {
-    return next(new AppError('text 必須是非空字串', 400, 'INVALID_TEXT'));
+    return new AppError('text 必須是非空字串', 400, 'INVALID_TEXT');
   }
-
   if (text.length > config.maxTextLength) {
-    return next(
-      new AppError(`text 長度不可超過 ${config.maxTextLength} 字`, 400, 'TEXT_TOO_LONG')
-    );
+    return new AppError(`text 長度不可超過 ${config.maxTextLength} 字`, 400, 'TEXT_TOO_LONG');
   }
-
-  const supported = getSupportedDirections();
-  if (!supported.includes(direction)) {
-    return next(
-      new AppError(
-        `direction 必須是以下其中之一：${supported.join(', ')}`,
-        400,
-        'INVALID_DIRECTION'
-      )
-    );
-  }
-
-  next();
+  return null;
 }
 
-module.exports = validateConvert;
+function checkConfigId(configId) {
+  const supported = getConfigIds();
+  if (typeof configId !== 'string' || configId === '') {
+    return new AppError(`缺少 config，可用的有：${supported.join(', ')}`, 400, 'INVALID_CONFIG');
+  }
+  if (!supported.includes(configId)) {
+    return new AppError(
+      `不支援的轉換設定「${configId}」，可用的有：${supported.join(', ')}`,
+      400,
+      'INVALID_CONFIG'
+    );
+  }
+  return null;
+}
+
+// customDict 為選填；格式為 [['原詞', '目標詞'], ...]
+function checkCustomDict(customDict) {
+  if (customDict === undefined) return null;
+
+  if (!Array.isArray(customDict)) {
+    return new AppError('customDict 必須是陣列', 400, 'INVALID_CUSTOM_DICT');
+  }
+  if (customDict.length > config.maxCustomDictEntries) {
+    return new AppError(
+      `customDict 最多 ${config.maxCustomDictEntries} 組詞條`,
+      400,
+      'INVALID_CUSTOM_DICT'
+    );
+  }
+
+  const isValidWord = (w) =>
+    typeof w === 'string' && w.length > 0 && w.length <= MAX_DICT_WORD_LENGTH;
+
+  const badIndex = customDict.findIndex(
+    (entry) =>
+      !Array.isArray(entry) || entry.length !== 2 || !isValidWord(entry[0]) || !isValidWord(entry[1])
+  );
+  if (badIndex !== -1) {
+    return new AppError(
+      `customDict 第 ${badIndex + 1} 組格式錯誤，應為 ["原詞", "目標詞"]，且每個詞 1～${MAX_DICT_WORD_LENGTH} 字`,
+      400,
+      'INVALID_CUSTOM_DICT'
+    );
+  }
+  return null;
+}
+
+// ===== Middleware =====
+
+// POST /api/convert：{ text, config, customDict? }
+function validateConvert(req, res, next) {
+  const { text, config: configId, customDict } = req.body || {};
+  next(checkText(text) || checkConfigId(configId) || checkCustomDict(customDict) || undefined);
+}
+
+// POST /api/convert/compare：{ text, configs: [...], customDict? }
+function validateCompare(req, res, next) {
+  const { text, configs, customDict } = req.body || {};
+
+  const textError = checkText(text);
+  if (textError) return next(textError);
+
+  if (!Array.isArray(configs) || configs.length === 0) {
+    return next(new AppError('configs 必須是非空陣列', 400, 'INVALID_CONFIGS'));
+  }
+  if (configs.length > config.maxCompareConfigs) {
+    return next(
+      new AppError(`configs 最多 ${config.maxCompareConfigs} 個`, 400, 'INVALID_CONFIGS')
+    );
+  }
+  if (new Set(configs).size !== configs.length) {
+    return next(new AppError('configs 不可重複', 400, 'INVALID_CONFIGS'));
+  }
+
+  for (const configId of configs) {
+    const configError = checkConfigId(configId);
+    if (configError) return next(configError);
+  }
+
+  next(checkCustomDict(customDict) || undefined);
+}
+
+module.exports = { validateConvert, validateCompare };
