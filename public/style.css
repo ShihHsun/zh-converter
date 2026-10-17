@@ -123,3 +123,62 @@ button.secondary {
 .message.success {
   color: var(--success);
 }
+
+/* 字幕檔轉換區塊 */
+.file-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.file-section h2 {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+}
+
+.hint {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.file-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 隱藏原生檔案選擇框，但保留鍵盤聚焦能力 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* 以 label 模擬次要按鈕外觀 */
+.file-btn {
+  display: inline-block;
+  margin: 0;
+  padding: 10px 20px;
+  font-weight: normal;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.file-btn:hover {
+  background: #eff4ff;
+}
+
+#file-input:focus-visible + .file-btn {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.file-name {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}

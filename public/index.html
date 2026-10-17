@@ -37,6 +37,25 @@
 
       <p id="message" class="message" role="status" aria-live="polite"></p>
     </form>
+
+    <!-- 字幕檔轉換（目前僅畫面，功能尚未實作） -->
+    <section class="file-section" aria-labelledby="file-title">
+      <h2 id="file-title">字幕檔轉換</h2>
+      <p class="hint">支援 .srt、.txt，轉換方向沿用上方設定。</p>
+
+      <div class="file-picker">
+        <input type="file" id="file-input" class="visually-hidden" accept=".srt,.txt" />
+        <label for="file-input" class="file-btn">選擇檔案</label>
+        <span id="file-name" class="file-name">尚未選擇檔案</span>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="file-convert-btn" disabled>轉換檔案</button>
+        <button type="button" id="file-download-btn" class="secondary" disabled>下載結果</button>
+      </div>
+
+      <p id="file-message" class="message" role="status" aria-live="polite"></p>
+    </section>
   </main>
 
   <script src="main.js"></script>
