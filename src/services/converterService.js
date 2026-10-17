@@ -4,7 +4,7 @@ const OpenCC = require('opencc-js');
 // cn：簡體中文、tw：台灣正體、twp：台灣正體（含慣用詞轉換，如「软件」→「軟體」）
 const DIRECTIONS = {
   'cn-to-tw': { from: 'cn', to: 'twp', label: '簡體 → 繁體（台灣用詞）' },
-  'tw-to-cn': { from: 'tw', to: 'cn', label: '繁體 → 簡體' },
+  'tw-to-cn': { from: 'twp', to: 'cn', label: '繁體 → 簡體' },
 };
 
 // 沒有指定方向時使用的預設值
@@ -21,8 +21,11 @@ function getSupportedDirections() {
   return Object.keys(DIRECTIONS);
 }
 
-// 執行轉換；呼叫前應已通過驗證，這裡不再重複檢查
+// 執行轉換；正常情況下呼叫前已通過驗證，這裡再加一層防呆
 function convert(text, direction) {
+  if (!Object.hasOwn(converters, direction)) {
+    throw new Error(`不支援的轉換方向：${direction}`);
+  }
   return converters[direction](text);
 }
 
