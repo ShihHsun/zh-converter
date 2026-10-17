@@ -2,9 +2,9 @@ const express = require('express');
 
 const router = express.Router();
 
-// 健康檢查：用來確認服務是否正常運作（例如給監控或負載平衡器使用）
+// GET /health：確認服務有正常啟動，部署後也用來檢查是否上線成功
 router.get('/', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', service: 'zh-converter' });
 });
 
 module.exports = router;

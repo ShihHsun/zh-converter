@@ -3,6 +3,8 @@ const OpenCC = require('opencc-js');
 // 支援的轉換設定，代碼沿用 OpenCC 官方命名（例如 s2twp.json → s2twp）
 // opencc-js 的地區代碼：cn 簡體、t OpenCC 標準繁體、tw 台灣、hk 香港、jp 日文新字體
 // 結尾帶 p 的（twp、hkp）代表「連同地域用詞一起轉換」，例如「软件」→「軟體」
+const DEFAULT_DIRECTION = 's2twp';
+
 const CONFIGS = {
   // 簡體 → 繁體
   s2t: { from: 'cn', to: 't', label: '簡體 → OpenCC 標準繁體' },
@@ -73,4 +75,10 @@ function convert(text, configId, customDict = []) {
   return applyCustomDict(converted, customDict, baseConverter);
 }
 
-module.exports = { getConfigIds, listConfigs, convert };
+module.exports = {
+  getConfigIds,
+  listConfigs,
+  convert,
+  DEFAULT_DIRECTION,
+  getSupportedDirections: getConfigIds,
+};

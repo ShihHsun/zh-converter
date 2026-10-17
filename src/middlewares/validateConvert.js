@@ -7,12 +7,25 @@ const MAX_DICT_WORD_LENGTH = 50;
 
 // ===== 共用的檢查函式：發現問題時回傳 AppError，沒問題回傳 null =====
 
+// 由上往下檢查，遇到第一個錯誤就停止
 function checkText(text) {
-  if (typeof text !== 'string' || text.trim() === '') {
-    return new AppError('text 必須是非空字串', 400, 'INVALID_TEXT');
+  if (text === undefined || text === null) {
+    return new AppError('請輸入要轉換的文字', 400, 'TEXT_REQUIRED');
   }
-  if (text.length > config.maxTextLength) {
-    return new AppError(`text 長度不可超過 ${config.maxTextLength} 字`, 400, 'TEXT_TOO_LONG');
+  if (typeof text !== 'string') {
+    return new AppError('文字格式錯誤', 400, 'TEXT_INVALID_TYPE');
+  }
+  // trim() 只用來判斷是不是空白，送去轉換的仍是原本的 text
+  if (text.trim() === '') {
+    return new AppError('請輸入要轉換的文字', 400, 'TEXT_EMPTY');
+  }
+  // 用 [...text].length 計算字數，emoji 和罕見字才不會被算成 2 個字
+  if ([...text].length > config.maxTextLength) {
+    return new AppError(
+      `文字太長，請分段轉換（上限 ${config.maxTextLength.toLocaleString()} 字）`,
+      413,
+      'TEXT_TOO_LONG'
+    );
   }
   return null;
 }

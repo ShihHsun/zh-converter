@@ -35,7 +35,7 @@ function createRateLimiter({ windowMs, max } = config.rateLimit) {
 
     if (entry.count > max) {
       res.set('Retry-After', String(Math.ceil((entry.resetAt - now) / 1000)));
-      return next(new AppError('請求過於頻繁，請稍後再試', 429, 'RATE_LIMITED'));
+      return next(new AppError(429, 'RATE_LIMITED', '請求太頻繁，請稍後再試'));
     }
 
     next();
