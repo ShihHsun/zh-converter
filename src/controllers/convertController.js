@@ -3,12 +3,17 @@ const converterService = require('../services/converterService');
 // 控制器只負責：從 req 取值 → 呼叫 service → 組成回應
 // 驗證已由 validateConvert 完成，錯誤會自動交給 errorHandler（Express 5 支援）
 function convert(req, res) {
-  const { text, direction } = req.body;
+  const { text, direction = converterService.DEFAULT_DIRECTION } = req.body;
   const result = converterService.convert(text, direction);
 
   res.json({
-    success: true,
-    data: { direction, original: text, result },
+    status: 'success',
+    data: {
+      result,
+      direction,
+      inputLength: [...text].length,
+      outputLength: [...result].length,
+    },
   });
 }
 
@@ -18,7 +23,7 @@ function listDirections(req, res) {
     value,
     label,
   }));
-  res.json({ success: true, data: directions });
+  res.json({ status: 'success', data: directions });
 }
 
 module.exports = { convert, listDirections };
