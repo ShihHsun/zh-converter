@@ -26,6 +26,33 @@ test('.txt：可解碼 UTF-8 BOM 與 UTF-16 BOM', () => {
   assert.equal(fileService.convertFileBuffer(utf16Bom, 'utf16.txt').content.toString('utf8'), '軟體');
 });
 
+test('.txt：Big5 檔案以 Big5 解碼，不會被當成 GBK 變亂碼', () => {
+  // 「這個軟體很好用」的 Big5 位元組
+  const input = Buffer.from([
+    0xb3, 0x6f, 0xad, 0xd3, 0xb3, 0x6e, 0xc5, 0xe9, 0xab, 0xdc, 0xa6, 0x6e, 0xa5, 0xce,
+  ]);
+  const result = fileService.convertFileBuffer(input, 'old.txt');
+
+  assert.equal(result.content.toString('utf8'), '這個軟體很好用');
+});
+
+test('.txt：Big5 搭配 tw-to-cn 也使用正確解碼', () => {
+  const input = Buffer.from([0xb3, 0x6e, 0xc5, 0xe9]);
+  const result = fileService.convertFileBuffer(input, 'old.txt', 'tw-to-cn');
+
+  assert.equal(result.content.toString('utf8'), '软件');
+});
+
+test('.txt：簡體 GBK 檔案不會被誤判為 Big5', () => {
+  // 「资料库」的 GBK 位元組
+  const result = fileService.convertFileBuffer(
+    Buffer.from([0xd7, 0xca, 0xc1, 0xcf, 0xbf, 0xe2]),
+    'a.txt'
+  );
+
+  assert.equal(result.content.toString('utf8'), '資料庫');
+});
+
 test('.srt：轉換字幕文字並原樣保留序號、時間軸與 CRLF 換行', () => {
   const input =
     '1\r\n00:00:01,000 --> 00:00:03,000\r\n这个软件很好用\r\n\r\n' +

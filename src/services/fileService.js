@@ -27,6 +27,35 @@ function decode(buffer, encoding) {
   }
 }
 
+// GB18030 幾乎能解碼任何位元組，Big5 檔案不會報錯而會變亂碼，所以先用位元組範圍判斷
+// Big5 證據：前導 A4–AF（GB2312 在此為符號、Big5 為最常用字）或後導 40–7E（GB2312 不會出現）
+// GBK 證據：前導 C9–F7（簡體常用字，Big5 較少用）
+// 只有 Big5 證據嚴格較多時才選 Big5，平手維持 GB18030；字數極少時仍可能誤判
+function looksLikeBig5(buffer) {
+  let big5Score = 0;
+  let gbkScore = 0;
+
+  for (let i = 0; i < buffer.length - 1; i += 1) {
+    const lead = buffer[i];
+    if (lead < 0x81 || lead > 0xfe) continue;
+
+    const trail = buffer[i + 1];
+    i += 1;
+
+    if ((lead >= 0xa4 && lead <= 0xaf) || (trail >= 0x40 && trail <= 0x7e)) big5Score += 1;
+    if (lead >= 0xc9 && lead <= 0xf7 && trail >= 0xa1) gbkScore += 1;
+  }
+
+  if (big5Score <= gbkScore) return false;
+
+  try {
+    new TextDecoder('big5', { fatal: true }).decode(buffer);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function decodeBuffer(buffer) {
   if (!Buffer.isBuffer(buffer)) {
     throw new AppError(400, 'FILE_INVALID', '檔案內容格式錯誤');
@@ -45,7 +74,7 @@ function decodeBuffer(buffer) {
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(content);
   } catch {
-    return decode(content, 'gb18030');
+    return decode(content, looksLikeBig5(content) ? 'big5' : 'gb18030');
   }
 }
 
