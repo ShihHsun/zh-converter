@@ -15,7 +15,13 @@ const corsOrigin =
   config.corsOrigin === '*' ? '*' : config.corsOrigin.split(',').map((s) => s.trim());
 
 // ===== 1. 全域 middleware（順序很重要） =====
-app.use(cors({ origin: corsOrigin }));
+// exposedHeaders：前後端不同網址時，前端才讀得到下載檔名與字數
+app.use(
+  cors({
+    origin: corsOrigin,
+    exposedHeaders: ['Content-Disposition', 'X-Input-Length', 'X-Output-Length'],
+  })
+);
 app.use(express.json({ limit: '100kb' })); // 解析 JSON body，並限制大小
 app.use(express.static(path.join(__dirname, '..', 'public'))); // 提供前端靜態檔案
 
