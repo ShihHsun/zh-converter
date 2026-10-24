@@ -14,18 +14,23 @@
       <label for="direction">轉換方向</label>
       <select id="direction" name="direction">
         <!-- 預設選項；頁面載入後會改用 API 回傳的清單 -->
-        <option value="s2t">簡體 → 繁體</option>
-        <option value="s2twp">簡體 → 繁體（台灣用詞）</option>
-        <option value="t2s">繁體 → 簡體</option>
+        <option value="cn-to-tw">簡體 → 繁體（台灣用詞）</option>
+        <option value="tw-to-cn">繁體 → 簡體</option>
       </select>
 
       <div class="panes">
         <div class="pane">
-          <label for="input">原文</label>
+          <div class="pane-header">
+            <label for="input">原文</label>
+            <span id="input-count" class="count">0 字</span>
+          </div>
           <textarea id="input" rows="10" placeholder="請輸入要轉換的文字…"></textarea>
         </div>
         <div class="pane">
-          <label for="output">結果</label>
+          <div class="pane-header">
+            <label for="output">結果</label>
+            <span id="output-count" class="count">0 字</span>
+          </div>
           <textarea id="output" rows="10" readonly></textarea>
         </div>
       </div>
@@ -33,15 +38,16 @@
       <div class="actions">
         <button type="submit" id="convert-btn">轉換</button>
         <button type="button" id="copy-btn" class="secondary">複製結果</button>
+        <button type="button" id="clear-btn" class="secondary">清除</button>
       </div>
 
       <p id="message" class="message" role="status" aria-live="polite"></p>
     </form>
 
-    <!-- 字幕檔轉換（目前僅畫面，功能尚未實作） -->
+    <!-- 字幕檔轉換：上傳檔案 → POST /api/convert/file → 下載轉換後的檔案 -->
     <section class="file-section" aria-labelledby="file-title">
       <h2 id="file-title">字幕檔轉換</h2>
-      <p class="hint">支援 .srt、.txt，轉換方向沿用上方設定。</p>
+      <p class="hint">支援 .srt、.txt（上限 1MB，可為 UTF-8、Big5 或 GBK 編碼），轉換方向沿用上方設定。</p>
 
       <div class="file-picker">
         <input type="file" id="file-input" class="visually-hidden" accept=".srt,.txt" />
@@ -55,6 +61,7 @@
       </div>
 
       <p id="file-message" class="message" role="status" aria-live="polite"></p>
+      <p id="file-info" class="file-info"></p>
     </section>
   </main>
 

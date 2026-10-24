@@ -111,6 +111,23 @@ button.secondary {
   border: 1px solid var(--primary);
 }
 
+/* 次要按鈕 hover 時用淺底色，避免文字和背景同色 */
+button.secondary:hover:not(:disabled) {
+  background: #eff4ff;
+}
+
+/* 標籤與字數放在同一列，字數靠右 */
+.pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.count {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
 .message {
   min-height: 1.5em;
   color: var(--muted);
@@ -179,6 +196,13 @@ button.secondary {
 }
 
 .file-name {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.file-info {
+  margin: 0;
+  font-size: 0.875rem;
   color: var(--muted);
   overflow-wrap: anywhere;
 }
