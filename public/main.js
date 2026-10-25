@@ -9,6 +9,8 @@ const convertBtn = document.getElementById('convert-btn');
 const copyBtn = document.getElementById('copy-btn');
 const clearBtn = document.getElementById('clear-btn');
 const message = document.getElementById('message');
+const swapBtn = document.getElementById('swap-btn');
+const bridge = document.querySelector('.bridge');
 
 const fileInput = document.getElementById('file-input');
 const fileName = document.getElementById('file-name');
@@ -18,6 +20,20 @@ const fileMessage = document.getElementById('file-message');
 const fileInfo = document.getElementById('file-info');
 
 const ALLOWED_EXTENSIONS = ['.txt', '.srt'];
+
+// 各轉換方向在卡片上顯示的徽章、語言名稱與原文欄提示文字
+const DIRECTION_LABELS = {
+  'cn-to-tw': {
+    source: ['简', '简体中文'],
+    target: ['繁', '繁體中文（台灣）'],
+    placeholder: '请输入要转换的文字…',
+  },
+  'tw-to-cn': {
+    source: ['繁', '繁體中文（台灣）'],
+    target: ['简', '简体中文'],
+    placeholder: '請輸入要轉換的文字…',
+  },
+};
 
 // 檔案轉換結果：{ blob, filename }，尚未轉換或已失效時為 null
 let fileResult = null;
@@ -72,6 +88,20 @@ function parseFilename(header) {
   return plain ? plain[1] : null;
 }
 
+// 依目前的轉換方向更新卡片標籤與配色；未知的方向保持目前的標籤不變
+function applyDirection() {
+  const labels = DIRECTION_LABELS[directionSelect.value];
+  if (!labels) return;
+
+  document.body.dataset.direction = directionSelect.value;
+  for (const role of ['source', 'target']) {
+    const [badge, name] = labels[role];
+    document.querySelector(`[data-role="${role}-badge"]`).textContent = badge;
+    document.querySelector(`[data-role="${role}-name"]`).textContent = name;
+  }
+  input.placeholder = labels.placeholder;
+}
+
 // 從 API 載入支援的轉換方向；失敗時保留 HTML 中的預設選項
 async function loadDirections() {
   try {
@@ -108,6 +138,7 @@ form.addEventListener('submit', async (event) => {
   }
 
   convertBtn.disabled = true;
+  bridge.classList.add('is-busy');
   showMessage('轉換中…');
 
   try {
@@ -133,6 +164,26 @@ form.addEventListener('submit', async (event) => {
     showMessage(err instanceof TypeError ? '無法連線到伺服器' : err.message, 'error');
   } finally {
     convertBtn.disabled = false;
+    bridge.classList.remove('is-busy');
+  }
+});
+
+// 對調轉換方向；已有結果時把結果搬到原文欄，方便直接再轉回去
+swapBtn.addEventListener('click', () => {
+  const options = [...directionSelect.options];
+  if (options.length < 2) return;
+
+  const next = (directionSelect.selectedIndex + 1) % options.length;
+  directionSelect.selectedIndex = next;
+  // 觸發 change，讓卡片標籤與檔案轉換結果一併更新
+  directionSelect.dispatchEvent(new Event('change'));
+
+  if (output.value) {
+    input.value = output.value;
+    output.value = '';
+    setCount(inputCount, countChars(input.value));
+    setCount(outputCount, 0);
+    showMessage('');
   }
 });
 
@@ -194,6 +245,7 @@ fileInput.addEventListener('change', () => {
 });
 
 directionSelect.addEventListener('change', () => {
+  applyDirection();
   if (fileResult) {
     resetFileResult();
     showFileMessage('轉換方向已變更，請重新轉換檔案');
@@ -252,4 +304,4 @@ fileDownloadBtn.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-loadDirections();
+loadDirections().then(applyDirection);
