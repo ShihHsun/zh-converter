@@ -66,7 +66,7 @@ body {
   transition: transform 0.6s ease;
 }
 
-/* 方向對調時整片底圖水平鏡像，讓靠外側的元素（天壇、台北 101）對調後仍在外側 */
+/* 方向對調時整片底圖水平鏡像，讓左右兩側的圖案對調後仍維持相同的內外位置 */
 body[data-direction="tw-to-cn"] .scene {
   transform: scaleX(-1);
 }
@@ -91,8 +91,10 @@ body[data-direction="tw-to-cn"] .scene {
 }
 
 /* 原文（簡體）在左，結果（繁體）在右；對調方向時由 .scene 整片鏡像 */
+/* 長城在 SVG 右端是截斷的，水平翻轉讓截斷處貼齊畫面左緣 */
 .deco--cn {
   left: 0;
+  transform: scaleX(-1);
 }
 
 .deco--tw {
@@ -432,16 +434,6 @@ textarea:focus {
   background: linear-gradient(90deg, var(--dst-glow), transparent);
 }
 
-.chip {
-  padding: 4px 14px;
-  font-size: 0.8125rem;
-  color: var(--muted);
-  border-radius: 999px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 14px rgba(90, 70, 150, 0.1);
-}
-
 button {
   padding: 10px 20px;
   font: inherit;
@@ -678,8 +670,7 @@ button.secondary:hover:not(:disabled) {
   }
 
   .bridge::before,
-  .bridge::after,
-  .chip {
+  .bridge::after {
     display: none;
   }
 

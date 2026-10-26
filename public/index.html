@@ -23,8 +23,8 @@
       <g class="cloud" fill="none" stroke-width="3" stroke-linecap="round">
         <path d="M200 40 q8-16 22-8 q8-14 22-4 q12-2 12 8 q-10 6-18 0 q-6 8-18 2 q-8 6-20 2z" />
       </g>
-      <!-- 天壇：放在最外側，避免被下方的字幕檔卡片擋住 -->
-      <g class="silhouette" transform="translate(-108 0)">
+      <!-- 天壇：SVG 已水平翻轉，放在右端才會靠畫面外側；長城這段較高，往上移避免底座被城牆蓋住 -->
+      <g class="silhouette" transform="translate(108 -12)">
         <rect x="128" y="176" width="64" height="8" rx="2" />
         <rect x="134" y="160" width="52" height="16" />
         <path d="M118 162 q42-14 84 0z" />
@@ -43,18 +43,18 @@
         <path class="wall-top" fill="none" stroke-width="3" d="M0 230 q60-50 120-26 t120-4 t80-20" />
         <!-- 烽火台 -->
         <g class="tower">
-          <rect x="108" y="176" width="30" height="34" />
-          <rect x="108" y="168" width="7" height="9" />
-          <rect x="119.5" y="168" width="7" height="9" />
-          <rect x="131" y="168" width="7" height="9" />
-          <path class="tower-door" d="M118 210 v-12 a5 5 0 0 1 10 0 v12z" />
+          <rect x="30" y="178" width="30" height="34" />
+          <rect x="30" y="170" width="7" height="9" />
+          <rect x="41.5" y="170" width="7" height="9" />
+          <rect x="53" y="170" width="7" height="9" />
+          <path class="tower-door" d="M40 212 v-12 a5 5 0 0 1 10 0 v12z" />
         </g>
         <g class="tower">
-          <rect x="230" y="170" width="30" height="34" />
-          <rect x="230" y="162" width="7" height="9" />
-          <rect x="241.5" y="162" width="7" height="9" />
-          <rect x="253" y="162" width="7" height="9" />
-          <path class="tower-door" d="M240 204 v-12 a5 5 0 0 1 10 0 v12z" />
+          <rect x="140" y="184" width="30" height="34" />
+          <rect x="140" y="176" width="7" height="9" />
+          <rect x="151.5" y="176" width="7" height="9" />
+          <rect x="163" y="176" width="7" height="9" />
+          <path class="tower-door" d="M150 218 v-12 a5 5 0 0 1 10 0 v12z" />
         </g>
       </g>
     </svg>
@@ -134,9 +134,7 @@
         </div>
 
         <div class="bridge">
-          <span class="chip" aria-hidden="true">字形</span>
           <button type="button" id="swap-btn" class="swap-btn" aria-label="對調轉換方向" title="對調轉換方向">⇄</button>
-          <span class="chip" aria-hidden="true">用詞</span>
           <button type="submit" id="convert-btn" class="convert-btn">轉換</button>
         </div>
 
