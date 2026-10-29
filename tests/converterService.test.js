@@ -55,14 +55,6 @@ test('修正：干你什麼事', () => {
   assert.strictEqual(convert('这颗梨子干你什么事', 'cn-to-tw'), '這顆梨子干你什麼事');
 });
 
-test('修正：姓氏于、范', () => {
-  assert.strictEqual(convert('于小姐和范先生', 'cn-to-tw'), '于小姐和范先生');
-});
-
-test('保護：關於先生的「於」不能被改掉', () => {
-  assert.strictEqual(convert('关于先生的事', 'cn-to-tw'), '關於先生的事');
-});
-
 test('修正：土豆是馬鈴薯', () => {
   assert.strictEqual(convert('土豆炖牛肉', 'cn-to-tw'), '馬鈴薯燉牛肉');
 });
@@ -74,4 +66,20 @@ test('修正：預設轉回默认，來回轉換不會改掉原文', () => {
 
 test('保護：预设立场不能被改成默认立场', () => {
   assert.strictEqual(convert('預設立場', 'tw-to-cn'), '预设立场');
+});
+
+test('防止誤改：常見的「於」「範」詞彙要保持正確', () => {
+  const cases = [
+    ['这本书属于小姐', '這本書屬於小姐'],
+    ['终于先生回来了', '終於先生回來了'],
+    ['由于先生不在', '由於先生不在'],
+    ['位于小姐家旁边', '位於小姐家旁邊'],
+    ['等于先生说的', '等於先生說的'],
+    ['他是模范先生', '他是模範先生'],
+    ['示范小姐', '示範小姐'],
+    ['关于先生的事', '關於先生的事'],
+  ];
+  cases.forEach(([input, expected]) => {
+    assert.strictEqual(convert(input, 'cn-to-tw'), expected);
+  });
 });
