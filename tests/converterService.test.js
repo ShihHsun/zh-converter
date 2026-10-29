@@ -49,3 +49,29 @@ test('依上下文判斷「只」和「隻」', () => {
   assert.strictEqual(convert('这只是妄想', 'cn-to-tw'), '這只是妄想');
   assert.strictEqual(convert('这只小鸟很可爱', 'cn-to-tw'), '這隻小鳥很可愛');
 });
+
+// ===== 修正規則 =====
+test('修正：干你什麼事', () => {
+  assert.strictEqual(convert('这颗梨子干你什么事', 'cn-to-tw'), '這顆梨子干你什麼事');
+});
+
+test('修正：姓氏于、范', () => {
+  assert.strictEqual(convert('于小姐和范先生', 'cn-to-tw'), '于小姐和范先生');
+});
+
+test('保護：關於先生的「於」不能被改掉', () => {
+  assert.strictEqual(convert('关于先生的事', 'cn-to-tw'), '關於先生的事');
+});
+
+test('修正：土豆是馬鈴薯', () => {
+  assert.strictEqual(convert('土豆炖牛肉', 'cn-to-tw'), '馬鈴薯燉牛肉');
+});
+
+test('修正：預設轉回默认，來回轉換不會改掉原文', () => {
+  const twText = convert('默认', 'cn-to-tw');
+  assert.strictEqual(convert(twText, 'tw-to-cn'), '默认');
+});
+
+test('保護：预设立场不能被改成默认立场', () => {
+  assert.strictEqual(convert('預設立場', 'tw-to-cn'), '预设立场');
+});

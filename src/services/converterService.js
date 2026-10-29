@@ -1,4 +1,5 @@
 const OpenCC = require('opencc-js');
+const { CUSTOM_RULES } = require('./customRules');
 
 // 支援的轉換方向與對應的 opencc-js 設定
 // cn：簡體中文、tw：台灣正體、twp：台灣正體（含慣用詞轉換，如「软件」→「軟體」）
@@ -13,7 +14,10 @@ const DEFAULT_DIRECTION = 'cn-to-tw';
 // 建立轉換器的成本較高，所以啟動時先建好並快取起來，之後重複使用
 const converters = {};
 for (const [key, { from, to }] of Object.entries(DIRECTIONS)) {
-  converters[key] = OpenCC.Converter({ from, to });
+  const baseConverter = OpenCC.Converter({ from, to });
+  const fixRules = OpenCC.CustomConverter(CUSTOM_RULES[key] || []);
+  // 先用 opencc 轉換，再套用我們的修正規則
+  converters[key] = (text) => fixRules(baseConverter(text));
 }
 
 // 回傳所有支援的方向代碼，供驗證使用
