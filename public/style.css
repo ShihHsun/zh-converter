@@ -233,11 +233,6 @@ body[data-direction="tw-to-cn"] .scene {
   .file-section {
     flex-shrink: 0;
   }
-
-  /* 比較模式的結果卡片數量不固定，改回一般的捲動版面 */
-  .container[data-mode="compare"] {
-    height: auto;
-  }
 }
 
 .hero {
@@ -546,165 +541,6 @@ button.secondary:hover:not(:disabled) {
   color: var(--success);
 }
 
-/* ===== 模式切換 ===== */
-
-/* 依 data-mode 隱藏另一個模式專屬的區塊 */
-[data-mode="single"] .only-compare,
-[data-mode="compare"] .only-single {
-  display: none;
-}
-
-/* 比較模式沒有右側結果卡，原文卡佔滿剩餘寬度，轉換按鈕留在右側 */
-[data-mode="compare"] .panes {
-  grid-template-columns: 1fr auto;
-}
-
-.mode-switch {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 0 0 10px;
-  padding: 0;
-  border: none;
-}
-
-.mode-switch label {
-  position: relative;
-  padding: 6px 16px;
-  font-size: 0.9375rem;
-  color: var(--muted);
-  border-radius: 999px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  cursor: pointer;
-}
-
-.mode-switch label:has(input:checked) {
-  color: #fff;
-  background: linear-gradient(135deg, var(--src-strong), var(--dst-strong));
-}
-
-/* 隱藏原生圓點，用整個標籤當按鈕 */
-.mode-switch input {
-  position: absolute;
-  opacity: 0;
-}
-
-.mode-switch label:has(input:focus-visible) {
-  outline: 2px solid var(--src-strong);
-  outline-offset: 2px;
-}
-
-/* ===== 自訂詞庫 ===== */
-
-.custom-dict {
-  margin-top: 12px;
-}
-
-.custom-dict summary {
-  cursor: pointer;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.custom-dict .hint {
-  margin: 8px 0;
-}
-
-.custom-dict textarea {
-  min-height: 0;
-  resize: vertical;
-  background: rgba(255, 255, 255, 0.75);
-}
-
-/* ===== 比較模式：設定勾選 ===== */
-
-.config-picker {
-  margin: 0 0 16px;
-}
-
-.config-picker legend {
-  float: left; /* 讓 legend 留在卡片內，而不是壓在邊框上 */
-  width: 100%;
-  margin-bottom: 10px;
-  font-weight: 700;
-}
-
-.config-grid {
-  clear: both;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 4px 16px;
-}
-
-.config-grid label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.config-grid label:has(input:disabled) {
-  color: var(--muted);
-  cursor: not-allowed;
-}
-
-/* ===== 比較模式：結果卡片 ===== */
-
-.compare-results {
-  display: grid;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.result-card {
-  padding: 0;
-  overflow: hidden;
-}
-
-.result-card header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.result-card h2 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.diff-status {
-  font-size: 0.875rem;
-  color: var(--muted);
-}
-
-.result-card .copy {
-  margin-left: auto;
-  padding: 4px 14px;
-  font-size: 0.875rem;
-}
-
-.result-text {
-  margin: 0;
-  padding: 14px 16px;
-  font: inherit; /* <pre> 預設是等寬小字，改回與頁面相同的字型 */
-  line-height: 1.7;
-  white-space: pre-wrap; /* 保留原文的換行與空白 */
-  word-break: break-word;
-  max-height: 320px;
-  overflow: auto;
-}
-
-/* 與基準結果不同的字 */
-.result-text mark {
-  background: #fff3b0;
-  color: inherit;
-  border-radius: 2px;
-}
-
 /* ===== 字幕檔轉換區塊 ===== */
 
 .file-section {
@@ -826,10 +662,6 @@ button.secondary:hover:not(:disabled) {
   .panes {
     grid-template-columns: 1fr;
     gap: 16px;
-  }
-
-  [data-mode="compare"] .panes {
-    grid-template-columns: 1fr;
   }
 
   .bridge {

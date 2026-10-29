@@ -107,19 +107,12 @@
     <div class="waves"></div>
   </div>
 
-  <!-- data-mode 決定目前顯示哪些區塊：single（單一轉換）或 compare（比較模式） -->
-  <main id="app" class="container" data-mode="single">
+  <main class="container">
     <header class="hero">
       <h1>繁簡轉換</h1>
       <p class="subtitle">一鍵轉換簡體 ⇄ 繁體（台灣用詞）</p>
 
-      <fieldset class="mode-switch">
-        <legend class="visually-hidden">模式</legend>
-        <label><input type="radio" name="mode" value="single" form="convert-form" checked /> 單一轉換</label>
-        <label><input type="radio" name="mode" value="compare" form="convert-form" /> 比較模式</label>
-      </fieldset>
-
-      <div class="direction-picker only-single">
+      <div class="direction-picker">
         <label for="direction">轉換方向</label>
         <select id="direction" name="direction" form="convert-form">
           <!-- 預設選項；頁面載入後會改用 API 回傳的清單 -->
@@ -130,12 +123,6 @@
     </header>
 
     <form id="convert-form">
-      <!-- 比較模式：勾選多個設定 -->
-      <fieldset class="card config-picker only-compare">
-        <legend>選擇要比較的設定（<span id="compare-count">0</span> / <span id="compare-max">5</span>）</legend>
-        <div id="compare-configs" class="config-grid"></div>
-      </fieldset>
-
       <div class="panes">
         <div class="card card--source">
           <div class="pane-header">
@@ -147,11 +134,11 @@
         </div>
 
         <div class="bridge">
-          <button type="button" id="swap-btn" class="swap-btn only-single" aria-label="對調轉換方向" title="對調轉換方向">⇄</button>
+          <button type="button" id="swap-btn" class="swap-btn" aria-label="對調轉換方向" title="對調轉換方向">⇄</button>
           <button type="submit" id="convert-btn" class="convert-btn">轉換</button>
         </div>
 
-        <div class="card card--target only-single">
+        <div class="card card--target">
           <div class="pane-header">
             <span class="badge" data-role="target-badge">繁</span>
             <label for="output" data-role="target-name">繁體中文（台灣）</label>
@@ -165,20 +152,11 @@
         </div>
       </div>
 
-      <details class="custom-dict">
-        <summary>自訂詞庫（選填）</summary>
-        <p class="hint">每行一組，原詞與目標詞以空白分隔，例如：<code>鼠标 滑鼠</code></p>
-        <textarea id="custom-dict" rows="3" placeholder="鼠标 滑鼠"></textarea>
-      </details>
-
       <p id="message" class="message" role="status" aria-live="polite"></p>
     </form>
 
-    <!-- 比較結果：每個設定一張卡片，與第一個（基準）不同的字會被標示 -->
-    <section id="compare-results" class="compare-results only-compare" aria-live="polite"></section>
-
     <!-- 字幕檔轉換：上傳檔案 → POST /api/convert/file → 下載轉換後的檔案 -->
-    <section class="card file-section only-single" aria-labelledby="file-title">
+    <section class="card file-section" aria-labelledby="file-title">
       <div class="file-header">
         <h2 id="file-title">字幕檔轉換</h2>
         <p class="hint">支援 .srt、.txt（上限 1MB，可為 UTF-8、Big5 或 GBK 編碼），轉換方向沿用上方設定。</p>

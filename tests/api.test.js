@@ -77,16 +77,6 @@ test('GET /api/convert/directions 回傳兩種轉換方向', async () => {
   );
 });
 
-// ===== GET /api/configs =====
-test('GET /api/configs 回傳所有轉換設定', async () => {
-  const res = await fetch(`${baseUrl}/api/configs`);
-  const body = await res.json();
-  assert.strictEqual(body.status, 'success');
-  const ids = body.data.map((c) => c.id);
-  assert.ok(ids.includes('s2twp'));
-  assert.ok(ids.includes('tw2sp'));
-});
-
 // ===== POST /api/convert =====
 test('文字轉換：沒帶方向時預設簡轉繁', async () => {
   const res = await postJson('/api/convert', { text: '这个软件' });
@@ -101,21 +91,6 @@ test('文字轉換：繁轉簡', async () => {
   const res = await postJson('/api/convert', { text: '這個軟體', direction: 'tw-to-cn' });
   const body = await res.json();
   assert.strictEqual(body.data.result, '这个软件');
-});
-
-test('文字轉換：指定 config 時改用該轉換設定', async () => {
-  const res = await postJson('/api/convert', { text: '这个软件', config: 's2hk' });
-  const body = await res.json();
-  assert.strictEqual(res.status, 200);
-  assert.strictEqual(body.data.config, 's2hk');
-  assert.strictEqual(body.data.direction, undefined);
-  assert.strictEqual(body.data.result, '這個軟件');
-});
-
-test('文字轉換：自訂詞庫以原文寫法填寫，套用在轉換結果上', async () => {
-  const res = await postJson('/api/convert', { text: '鼠标坏了', customDict: [['鼠标', '滑鼠']] });
-  const body = await res.json();
-  assert.strictEqual(body.data.result, '滑鼠壞了');
 });
 
 test('文字轉換：字數用實際看到的字計算（emoji 算 1 個字）', async () => {
@@ -148,45 +123,6 @@ test('文字轉換的錯誤', async (t) => {
   await t.test('body 超過 100kb → PAYLOAD_TOO_LARGE', async () => {
     const res = await postJson('/api/convert', { text: 'a'.repeat(120000) });
     await assertError(res, 413, 'PAYLOAD_TOO_LARGE');
-  });
-});
-
-// ===== POST /api/convert/compare =====
-test('比較模式：同一段文字用多個設定轉換', async () => {
-  const res = await postJson('/api/convert/compare', { text: '软件', configs: ['s2tw', 's2twp'] });
-  const body = await res.json();
-  assert.strictEqual(res.status, 200);
-  assert.deepStrictEqual(body.data.results, [
-    { config: 's2tw', result: '軟件' },
-    { config: 's2twp', result: '軟體' },
-  ]);
-});
-
-test('比較模式：s2twp 與主畫面的 cn-to-tw 一樣套用修正規則', async () => {
-  const res = await postJson('/api/convert/compare', { text: '土豆', configs: ['s2tw', 's2twp'] });
-  const body = await res.json();
-  assert.strictEqual(body.data.results[1].result, '馬鈴薯');
-});
-
-test('比較模式：錯誤的請求', async (t) => {
-  await t.test('configs 不是陣列', async () => {
-    await assertError(await postJson('/api/convert/compare', { text: '你好' }), 400, 'INVALID_CONFIGS');
-  });
-  await t.test('configs 重複', async () => {
-    const res = await postJson('/api/convert/compare', { text: '你好', configs: ['s2tw', 's2tw'] });
-    await assertError(res, 400, 'INVALID_CONFIGS');
-  });
-  await t.test('不支援的設定', async () => {
-    const res = await postJson('/api/convert/compare', { text: '你好', configs: ['s2tw', 'toString'] });
-    await assertError(res, 400, 'INVALID_CONFIG');
-  });
-  await t.test('自訂詞庫格式錯誤', async () => {
-    const res = await postJson('/api/convert/compare', {
-      text: '你好',
-      configs: ['s2tw', 's2twp'],
-      customDict: [['只有一個詞']],
-    });
-    await assertError(res, 400, 'INVALID_CUSTOM_DICT');
   });
 });
 

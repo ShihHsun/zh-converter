@@ -3,34 +3,18 @@ const fileService = require('../services/fileService');
 
 // 控制器只負責：從 req 取值 → 呼叫 service → 組成回應
 // 驗證已由 validateConvert 完成，錯誤會自動交給 errorHandler（Express 5 支援）
-// POST /api/convert：有帶 config 時用指定設定，否則用 direction
 function convert(req, res) {
-  const { text, config, direction = converterService.DEFAULT_DIRECTION, customDict } = req.body;
-  const target = config === undefined ? { direction } : { config };
-  const result = converterService.convert(text, config ?? direction, customDict);
+  const { text, direction = converterService.DEFAULT_DIRECTION } = req.body;
+  const result = converterService.convert(text, direction);
 
   res.json({
     status: 'success',
     data: {
       result,
-      ...target,
+      direction,
       inputLength: [...text].length,
       outputLength: [...result].length,
     },
-  });
-}
-
-// POST /api/convert/compare：同一段文字用多個設定轉換，方便比較差異
-function compare(req, res) {
-  const { text, configs, customDict } = req.body;
-  const results = configs.map((config) => ({
-    config,
-    result: converterService.convert(text, config, customDict),
-  }));
-
-  res.json({
-    status: 'success',
-    data: { original: text, results },
   });
 }
 
@@ -61,9 +45,4 @@ function listDirections(req, res) {
   res.json({ status: 'success', data: directions });
 }
 
-// GET /api/configs：列出所有支援的轉換設定
-function listConfigs(req, res) {
-  res.json({ status: 'success', data: converterService.listConfigs() });
-}
-
-module.exports = { convert, compare, convertFile, listDirections, listConfigs };
+module.exports = { convert, convertFile, listDirections };
