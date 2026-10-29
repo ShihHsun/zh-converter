@@ -14,6 +14,7 @@ module.exports = {
   maxTextLength: toInt(process.env.MAX_TEXT_LENGTH, 10000),
   maxCustomDictEntries: toInt(process.env.MAX_CUSTOM_DICT_ENTRIES, 100),
   maxCompareConfigs: toInt(process.env.MAX_COMPARE_CONFIGS, 5),
+  maxFileSize: toInt(process.env.MAX_FILE_SIZE, 1024 * 1024), // 單位：位元組（預設 1MB）
   rateLimit: {
     windowMs: toInt(process.env.RATE_LIMIT_WINDOW_MS, 60 * 1000),
     max: toInt(process.env.RATE_LIMIT_MAX, 30),

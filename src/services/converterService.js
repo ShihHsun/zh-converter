@@ -1,10 +1,9 @@
 const OpenCC = require('opencc-js');
+const { CUSTOM_RULES } = require('./customRules');
 
 // 支援的轉換設定，代碼沿用 OpenCC 官方命名（例如 s2twp.json → s2twp）
 // opencc-js 的地區代碼：cn 簡體、t OpenCC 標準繁體、tw 台灣、hk 香港、jp 日文新字體
 // 結尾帶 p 的（twp、hkp）代表「連同地域用詞一起轉換」，例如「软件」→「軟體」
-const DEFAULT_DIRECTION = 's2twp';
-
 const CONFIGS = {
   // 簡體 → 繁體
   s2t: { from: 'cn', to: 't', label: '簡體 → OpenCC 標準繁體' },
@@ -31,20 +30,50 @@ const CONFIGS = {
   jp2t: { from: 'jp', to: 't', label: '日文新字體 → 日文舊字體', experimental: true },
 };
 
+// 主畫面的兩個轉換方向，各自對應一個轉換設定
+// 修正規則（customRules.js）以方向為單位撰寫，套用在對應的設定上
+const DIRECTIONS = {
+  'cn-to-tw': { config: 's2twp', label: '簡體 → 繁體（台灣用詞）' },
+  'tw-to-cn': { config: 'tw2sp', label: '繁體 → 簡體' },
+};
+
+// 沒有指定方向時使用的預設值
+const DEFAULT_DIRECTION = 'cn-to-tw';
+
+const RULES_BY_CONFIG = Object.fromEntries(
+  Object.entries(DIRECTIONS).map(([direction, { config }]) => [config, CUSTOM_RULES[direction] || []])
+);
+
 // 轉換器建立成本較高，採「第一次用到才建立」並快取，避免啟動時一次載入全部字典
 const converterCache = new Map();
 
 function getConverter(configId) {
   if (!converterCache.has(configId)) {
     const { from, to } = CONFIGS[configId];
-    converterCache.set(configId, OpenCC.Converter({ from, to }));
+    const baseConverter = OpenCC.Converter({ from, to });
+    const fixRules = OpenCC.CustomConverter(RULES_BY_CONFIG[configId] || []);
+    // 先用 opencc 轉換，再套用我們的修正規則
+    converterCache.set(configId, (text) => fixRules(baseConverter(text)));
   }
   return converterCache.get(configId);
+}
+
+// 方向代碼（cn-to-tw）轉成設定代碼（s2twp）；本身就是設定代碼時原樣回傳
+// 用 Object.hasOwn 避免 'toString' 這類原型上的屬性被當成合法代碼
+function resolveConfigId(id) {
+  if (Object.hasOwn(DIRECTIONS, id)) return DIRECTIONS[id].config;
+  if (Object.hasOwn(CONFIGS, id)) return id;
+  throw new Error(`不支援的轉換設定：${id}`);
 }
 
 // 回傳所有支援的設定代碼，供驗證使用
 function getConfigIds() {
   return Object.keys(CONFIGS);
+}
+
+// 回傳所有支援的方向代碼，供驗證使用
+function getSupportedDirections() {
+  return Object.keys(DIRECTIONS);
 }
 
 // 回傳給前端顯示用的設定清單
@@ -66,9 +95,10 @@ function applyCustomDict(converted, customDict, baseConverter) {
   return OpenCC.CustomConverter(normalizedDict)(converted);
 }
 
-// 執行轉換；呼叫前應已通過驗證，這裡不再重複檢查
-function convert(text, configId, customDict = []) {
-  const baseConverter = getConverter(configId);
+// 執行轉換；id 可為方向代碼或設定代碼
+// 正常情況下呼叫前已通過驗證，resolveConfigId 再加一層防呆
+function convert(text, id, customDict = []) {
+  const baseConverter = getConverter(resolveConfigId(id));
   const converted = baseConverter(text);
 
   if (customDict.length === 0) return converted;
@@ -76,9 +106,11 @@ function convert(text, configId, customDict = []) {
 }
 
 module.exports = {
+  CONFIGS,
+  DIRECTIONS,
+  DEFAULT_DIRECTION,
   getConfigIds,
+  getSupportedDirections,
   listConfigs,
   convert,
-  DEFAULT_DIRECTION,
-  getSupportedDirections: getConfigIds,
 };

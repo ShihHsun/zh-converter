@@ -360,6 +360,324 @@
           ]
         }
       }
+    },
+    {
+      "name": "檔案上傳 /api/convert/file",
+      "description": "範例檔在 docs/samples/。Postman 的 Settings → General → Working directory 設成專案資料夾，檔案就會自動帶入；否則請在 Body 的 file 欄位重新選擇檔案。",
+      "item": [
+        {
+          "name": "file 成功（.srt 簡轉繁）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/samples/sample.srt"
+                },
+                {
+                  "key": "direction",
+                  "value": "cn-to-tw",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            },
+            "description": "成功時回傳檔案本身；字數在回應標頭 X-Input-Length、X-Output-Length"
+          }
+        },
+        {
+          "name": "file 成功（GBK .txt 簡轉繁）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/samples/sample-gbk.txt"
+                },
+                {
+                  "key": "direction",
+                  "value": "cn-to-tw",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            }
+          }
+        },
+        {
+          "name": "file 成功（Big5 .txt 繁轉簡）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/samples/sample-big5.txt"
+                },
+                {
+                  "key": "direction",
+                  "value": "tw-to-cn",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            }
+          }
+        },
+        {
+          "name": "400 FILE_REQUIRED（沒上傳檔案）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "direction",
+                  "value": "cn-to-tw",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            }
+          }
+        },
+        {
+          "name": "400 FILE_TYPE_UNSUPPORTED（不是 .txt / .srt）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/zh-converter.postman_collection.json"
+                },
+                {
+                  "key": "direction",
+                  "value": "cn-to-tw",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            }
+          }
+        },
+        {
+          "name": "400 DIRECTION_UNSUPPORTED（方向錯誤）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/samples/sample.srt"
+                },
+                {
+                  "key": "direction",
+                  "value": "abc",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            }
+          }
+        },
+        {
+          "name": "400 FILE_EMPTY（檔案只有空白）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/samples/sample-empty.txt"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            }
+          }
+        },
+        {
+          "name": "400 FILE_FIELD_INVALID（欄位名稱不是 file）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "upload",
+                  "type": "file",
+                  "src": "docs/samples/sample.srt"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            }
+          }
+        },
+        {
+          "name": "400 FILE_TOO_MANY（一次傳兩個檔案）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/samples/sample.srt"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/samples/sample-gbk.txt"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            }
+          }
+        },
+        {
+          "name": "413 FILE_TOO_LARGE（超過 1MB）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            },
+            "description": "請在 file 欄位自行選一個超過 1MB 的 .txt 或 .srt 檔案"
+          }
+        }
+      ]
     }
   ]
 }
