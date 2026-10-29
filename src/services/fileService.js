@@ -87,8 +87,24 @@ function isSupportedExtension(originalName) {
   return ALLOWED_EXTENSIONS.includes(getExtension(originalName));
 }
 
-function buildOutputFilename(originalName) {
-  return `converted-${Date.now()}${getExtension(originalName)}`;
+function buildOutputFilename(originalName, direction) {
+  const suffixes = { 'cn-to-tw': '繁體', 'tw-to-cn': '簡體' };
+  const suffix = suffixes[direction];
+  if (!suffix) {
+    throw new AppError(400, 'DIRECTION_UNSUPPORTED', '不支援這個轉換方向');
+  }
+
+  const extension = getExtension(originalName);
+  const basename = String(originalName || '').replace(/^.*[\\/]/, '');
+  const stem = basename
+    .slice(0, basename.length - extension.length)
+    .replace(/[\u0000-\u001f\u007f<>:"|?*]/g, '')
+    .trim()
+    .replace(/[. ]+$/g, '');
+  const safeStem = [...stem].slice(0, 180).join('');
+
+  if (!safeStem) return `converted-${Date.now()}${extension}`;
+  return `${safeStem}-${suffix}${extension}`;
 }
 
 function convertSrt(text, direction, convert = converterService.convert) {
@@ -124,7 +140,7 @@ function convertFileBuffer(buffer, originalName, direction = converterService.DE
 
   return {
     content: Buffer.from(result, 'utf8'),
-    filename: buildOutputFilename(originalName),
+    filename: buildOutputFilename(originalName, direction),
     inputLength: [...text].length,
     outputLength: [...result].length,
   };

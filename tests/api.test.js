@@ -132,7 +132,10 @@ test('檔案轉換：.srt 簡轉繁，時間軸不變，回傳檔案與字數標
     direction: 'cn-to-tw',
   });
   assert.strictEqual(res.status, 200);
-  assert.match(res.headers.get('content-disposition'), /^attachment; filename=converted-\d+\.srt$/);
+  assert.match(
+    res.headers.get('content-disposition'),
+    /^attachment; .*filename\*=UTF-8''sample-%E7%B9%81%E9%AB%94\.srt$/
+  );
   assert.ok(Number(res.headers.get('x-input-length')) > 0);
   assert.ok(Number(res.headers.get('x-output-length')) > 0);
 
