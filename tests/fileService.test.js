@@ -8,7 +8,7 @@ test('.txt：轉換 UTF-8 文字並回傳 UTF-8 檔案', () => {
   assert.equal(result.content.toString('utf8'), '這個軟體很好用');
   assert.equal(result.inputLength, 7);
   assert.equal(result.outputLength, 7);
-  assert.match(result.filename, /^converted-\d+\.txt$/);
+  assert.equal(result.filename, 'article-繁體.txt');
 });
 
 test('.txt：可解碼 GBK 檔案', () => {
@@ -63,7 +63,7 @@ test('.srt：轉換字幕文字並原樣保留序號、時間軸與 CRLF 換行'
   const result = fileService.convertFileBuffer(Buffer.from(input, 'utf8'), 'captions.srt');
 
   assert.equal(result.content.toString('utf8'), expected);
-  assert.match(result.filename, /^converted-\d+\.srt$/);
+  assert.equal(result.filename, 'captions-繁體.srt');
 });
 
 test('保留指定的轉換方向', () => {
@@ -74,6 +74,31 @@ test('保留指定的轉換方向', () => {
   );
 
   assert.equal(result.content.toString('utf8'), '软件');
+  assert.equal(result.filename, 'article-簡體.txt');
+});
+
+test('輸出檔名保留中文原檔名並清除路徑與不安全字元', () => {
+  const result = fileService.convertFileBuffer(
+    Buffer.from('软件', 'utf8'),
+    'C:\\uploads\\字幕:第一集?.srt'
+  );
+
+  assert.equal(result.filename, '字幕第一集-繁體.srt');
+});
+
+test('原檔名清理後為空時使用時間戳檔名', () => {
+  const result = fileService.convertFileBuffer(Buffer.from('软件', 'utf8'), '...txt');
+
+  assert.match(result.filename, /^converted-\d+\.txt$/);
+});
+
+test('過長的原檔名會限制長度', () => {
+  const result = fileService.convertFileBuffer(
+    Buffer.from('软件', 'utf8'),
+    `${'a'.repeat(250)}.txt`
+  );
+
+  assert.equal(result.filename.length, 180 + '-繁體'.length + '.txt'.length);
 });
 
 test('不支援的副檔名會回傳 FILE_TYPE_UNSUPPORTED', () => {
