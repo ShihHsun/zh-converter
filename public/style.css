@@ -610,6 +610,8 @@ button.secondary:hover:not(:disabled) {
 }
 
 .file-info {
+  /* 清空時保留高度，避免版面跳動 */
+  min-height: 1.5em;
   margin: 0;
   font-size: 0.875rem;
   color: var(--muted);

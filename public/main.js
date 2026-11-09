@@ -214,10 +214,14 @@ clearBtn.addEventListener('click', () => {
 // ===== 檔案轉換 =====
 
 // 清掉上一次的轉換結果；換檔或換方向後，舊結果已和目前設定不符
+// 舊結果失效後，只要目前選的檔案可轉換，就重新開放「轉換檔案」按鈕
 function resetFileResult() {
   fileResult = null;
   fileDownloadBtn.disabled = true;
   fileInfo.textContent = '';
+
+  const file = fileInput.files[0];
+  fileConvertBtn.disabled = !file || !ALLOWED_EXTENSIONS.includes(getExtension(file.name));
 }
 
 fileInput.addEventListener('change', () => {
@@ -286,7 +290,8 @@ fileConvertBtn.addEventListener('click', async () => {
   } catch (err) {
     showFileMessage(err instanceof TypeError ? '無法連線到伺服器' : err.message, 'error');
   } finally {
-    fileConvertBtn.disabled = false;
+    // 已轉換成功就不再重複呼叫 API，換檔或換方向才會重新啟用；失敗時開放重試
+    fileConvertBtn.disabled = Boolean(fileResult);
   }
 });
 
