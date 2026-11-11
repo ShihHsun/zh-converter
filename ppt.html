@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>繁簡轉換簡報</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" />
+  <style>
+    :root {
+      --text: #2b2540;
+      --muted: #6f6a82;
+      --line: rgba(43, 37, 64, 0.12);
+      --cn: #7c5cff;
+      --cn-accent: #e0607e;
+      --cn-soft: #efe9ff;
+      --tw: #1fae9b;
+      --tw-accent: #4cc3d9;
+      --tw-soft: #e2f7f3;
+      --ok: #2e7d32;
+      --bad: #c62828;
+      --card: rgba(255, 255, 255, 0.72);
+      --card-border: rgba(255, 255, 255, 0.95);
+      --code-bg: #221d33;
+      --code-text: #ece8ff;
+      --bg: linear-gradient(120deg, #f7f3fb 0%, #fbf4f7 45%, #eef8f6 100%);
+      --stage-shadow: 0 30px 80px rgba(90, 70, 150, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #e9e4f2;
+      color: var(--text);
+      font-family: "Noto Sans TC", system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    /* ===== 舞台：固定 1280x720，再依視窗等比縮放 ===== */
+    .viewport {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .stage {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      flex: none;
+      transform-origin: center center;
+      background: var(--bg);
+      border-radius: 18px;
+      box-shadow: var(--stage-shadow);
+      overflow: hidden;
+    }
+
+    /* 背景光暈 */
+    .stage::before,
+    .stage::after {
+      content: "";
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .stage::before { background: var(--cn); top: -260px; left: -180px; }
+    .stage::after { background: var(--tw); bottom: -280px; right: -160px; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 64px 80px 72px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(40px);
+      transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s;
+      z-index: 1;
+    }
+    .slide.active { opacity: 1; visibility: visible; transform: none; }
+    .slide.prev { transform: translateX(-40px); }
+
+    /* ===== 字體排版 ===== */
+    .eyebrow {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--cn);
+      margin: 0 0 10px;
+    }
+    h1, h2 { margin: 0; font-family: "Noto Serif TC", serif; font-weight: 900; }
+    h2 { font-size: 44px; line-height: 1.25; margin-bottom: 28px; }
+    h3 { margin: 0 0 10px; font-size: 24px; }
+    p { margin: 0; }
+    .lead { font-size: 24px; line-height: 1.7; color: var(--muted); }
+    .muted { color: var(--muted); }
+    .grad {
+      background: linear-gradient(90deg, var(--cn), var(--cn-accent) 45%, var(--tw));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    code, .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+    :not(pre) > code {
+      font-size: 0.9em;
+      background: rgba(124, 92, 255, 0.1);
+      color: #5a3fd6;
+      padding: 1px 7px;
+      border-radius: 6px;
+    }
+
+    /* ===== 共用元件 ===== */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px 26px;
+      box-shadow: 0 10px 30px rgba(90, 70, 150, 0.08);
+    }
+    .grid { display: grid; gap: 22px; }
+    .g2 { grid-template-columns: 1fr 1fr; }
+    .g3 { grid-template-columns: repeat(3, 1fr); }
+    .g4 { grid-template-columns: repeat(4, 1fr); }
+    .fill { flex: 1; min-height: 0; }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+    .i-cn { background: linear-gradient(135deg, var(--cn), var(--cn-accent)); }
+    .i-tw { background: linear-gradient(135deg, var(--tw), var(--tw-accent)); }
+    .i-mix { background: linear-gradient(135deg, var(--cn), var(--tw)); }
+
+    .card p { font-size: 18px; line-height: 1.65; color: var(--muted); }
+
+    ul.points { margin: 0; padding: 0; list-style: none; }
+    ul.points li {
+      position: relative;
+      padding-left: 26px;
+      font-size: 21px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    ul.points li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cn), var(--tw));
+    }
+    .card ul.points li { font-size: 18px; margin-bottom: 8px; }
+
+    pre {
+      margin: 0;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 14px;
+      padding: 20px 22px;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow: hidden;
+      white-space: pre;
+    }
+    pre .k { color: #c792ea; }
+    pre .s { color: #a5e8a0; }
+    pre .c { color: #8a83a6; }
+    pre .n { color: #ffcb6b; }
+    pre .p { color: #82aaff; }
+
+    .tag {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-right: 6px;
+    }
+    .t-get { background: var(--tw-soft); color: #13806f; }
+    .t-post { background: var(--cn-soft); color: #5a3fd6; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 19px; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: 15px; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+    tr:last-child td { border-bottom: none; }
+
+    .bad { color: var(--bad); font-weight: 700; }
+    .ok { color: var(--ok); font-weight: 700; }
+
+    /* ===== 封面 ===== */
+    .cover { justify-content: center; align-items: flex-start; }
+    .cover h1 { font-size: 112px; line-height: 1.1; letter-spacing: 0.04em; }
+    .cover .sub { font-size: 30px; margin-top: 18px; color: var(--muted); }
+    .cover .chips { display: flex; gap: 12px; margin-top: 44px; flex-wrap: wrap; }
+    .chip {
+      font-size: 18px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      font-weight: 500;
+    }
+    .cover .big-chars {
+      position: absolute;
+      right: 70px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      font-family: "Noto Serif TC", serif;
+      font-weight: 900;
+    }
+    .big-chars .char {
+      width: 190px;
+      height: 190px;
+      border-radius: 40px;
+      display: grid;
+      place-items: center;
+      font-size: 120px;
+      color: #fff;
+      box-shadow: 0 20px 50px rgba(90, 70, 150, 0.25);
+    }
+    .big-chars .arrow { font-size: 56px; color: var(--muted); animation: swing 2.4s ease-in-out infinite; }
+    @keyframes swing { 0%, 100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+
+    /* ===== 對照卡 ===== */
+    .pair { display: flex; align-items: center; gap: 14px; font-size: 26px; margin-bottom: 14px; }
+    .pair .from { color: var(--cn); font-weight: 700; min-width: 120px; }
+    .pair .to { color: var(--tw); font-weight: 700; }
+    .pair .arr { color: var(--muted); font-size: 20px; }
+
+    /* ===== 流程圖 ===== */
+    .flow { display: flex; align-items: stretch; gap: 0; }
+    .flow .step {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px 14px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(90, 70, 150, 0.07);
+    }
+    .flow .step b { display: block; font-size: 19px; margin-bottom: 6px; }
+    .flow .step span { font-size: 15px; color: var(--muted); line-height: 1.5; display: block; }
+    .flow .join { width: 34px; display: grid; place-items: center; color: var(--muted); font-size: 22px; flex: none; }
+    .step.hl-cn { border-color: var(--cn); background: var(--cn-soft); }
+    .step.hl-tw { border-color: var(--tw); background: var(--tw-soft); }
+
+    .mw-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .mw {
+      font-size: 16px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px dashed rgba(124, 92, 255, 0.45);
+    }
+
+    /* ===== 編碼判斷 ===== */
+    .decision { display: flex; flex-direction: column; gap: 12px; }
+    .decision .row { display: flex; align-items: center; gap: 14px; }
+    .decision .q {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 18px;
+    }
+    .decision .num {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cn), var(--tw));
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      flex: none;
+    }
+    .decision .res { font-size: 16px; font-weight: 700; color: var(--tw); min-width: 150px; }
+
+    /* ===== Git 分支 ===== */
+    .branches { display: flex; flex-direction: column; gap: 16px; }
+    .branch {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+    }
+    .branch .name { font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 20px; min-width: 190px; }
+    .branch .desc { font-size: 18px; color: var(--muted); }
+    .branch .dot { width: 16px; height: 16px; border-radius: 50%; flex: none; }
+    .up { text-align: center; color: var(--muted); font-size: 16px; margin: -6px 0; }
+
+    /* ===== 現場示範 ===== */
+    .demo { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch; }
+    .demo textarea {
+      width: 100%;
+      height: 220px;
+      resize: none;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      background: #fff;
+      padding: 16px 18px;
+      font: inherit;
+      font-size: 22px;
+      line-height: 1.6;
+      color: var(--text);
+      outline: none;
+    }
+    .demo textarea:focus { border-color: var(--cn); }
+    .demo #demo-out { background: var(--tw-soft); }
+    .demo .mid { display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+    .btn {
+      font: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, var(--cn), var(--cn-accent));
+    }
+    .btn.alt { background: #fff; color: var(--text); border: 1px solid var(--line); }
+    .btn:disabled { opacity: 0.5; cursor: wait; }
+    .demo-label { font-size: 15px; font-weight: 700; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.06em; }
+    .demo-status { margin-top: 16px; font-size: 17px; min-height: 26px; }
+    .samples { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .samples button {
+      font: inherit;
+      font-size: 16px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .samples button:hover { border-color: var(--cn); color: var(--cn); }
+    .api-base { font-size: 15px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+    .api-base input {
+      font: inherit;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      width: 240px;
+    }
+
+    /* ===== 結尾 ===== */
+    .end { justify-content: center; align-items: center; text-align: center; }
+    .end h1 { font-size: 96px; }
+    .end .lead { margin-top: 20px; }
+
+    /* ===== 控制列 ===== */
+    .progress {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--cn), var(--tw));
+      transition: width 0.4s ease;
+      z-index: 5;
+    }
+    .counter {
+      position: absolute;
+      right: 32px;
+      bottom: 22px;
+      font-size: 15px;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      z-index: 5;
+    }
+    .brand {
+      position: absolute;
+      left: 80px;
+      bottom: 22px;
+      font-size: 15px;
+      color: var(--muted);
+      z-index: 5;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    body:hover .nav, .nav:focus-within { opacity: 1; }
+    .nav button {
+      font: inherit;
+      font-size: 15px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .help {
+      position: fixed;
+      top: 14px;
+      right: 16px;
+      font-size: 13px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.85);
+      padding: 6px 12px;
+      border-radius: 10px;
+      z-index: 10;
+      transition: opacity 0.6s;
+    }
+    .help.hide { opacity: 0; pointer-events: none; }
+
+    /* 總覽模式：按 O 切換 */
+    body.overview .stage { overflow: auto; }
+    body.overview .slide {
+      position: relative;
+      inset: auto;
+    }
+
+    @media print {
+      html, body { overflow: visible; height: auto; background: none; }
+      .viewport { position: static; display: block; }
+      .stage { transform: none !important; box-shadow: none; border-radius: 0; height: auto; overflow: visible; background: none; }
+      .stage::before, .stage::after, .nav, .help, .progress, .counter { display: none; }
+      .slide {
+        position: relative;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        width: 1280px;
+        height: 720px;
+        background: var(--bg);
+        page-break-after: always;
+      }
+      @page { size: 1280px 720px; margin: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slide, .progress { transition: none; }
+      .big-chars .arrow { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="help" id="help">← → / 空白鍵 換頁　F 全螢幕　Home / End 首尾頁</div>
+
+  <div class="viewport">
+    <div class="stage" id="stage">
+
+      <!-- 1. 封面 -->
+      <section class="slide cover">
+        <p class="eyebrow">HEX SCHOOL · 團隊專案</p>
+        <h1 class="grad">繁簡轉換</h1>
+        <p class="sub">簡體 ⇄ 繁體（台灣用詞）轉換 API ＋ 網頁</p>
+        <div class="chips">
+          <span class="chip">Node.js 18+</span>
+          <span class="chip">Express 5</span>
+          <span class="chip">opencc-js</span>
+          <span class="chip">文字 & 字幕檔</span>
+        </div>
+        <div class="big-chars" aria-hidden="true">
+          <div class="char i-cn">简</div>
+          <div class="arrow">⇄</div>
+          <div class="char i-tw">繁</div>
+        </div>
+      </section>
+
+      <!-- 2. 為什麼做 -->
+      <section class="slide">
+        <p class="eyebrow">WHY</p>
+        <h2>繁簡轉換，不只是「換字形」</h2>
+        <div class="grid g2 fill">
+          <div class="card">
+            <h3>字形轉換只是第一步</h3>
+            <div class="pair"><span class="from">头发</span><span class="arr">→</span><span class="to">頭髮</span></div>
+            <div class="pair"><span class="from">吃面</span><span class="arr">→</span><span class="to">吃麵</span></div>
+            <div class="pair"><span class="from">那只猫</span><span class="arr">→</span><span class="to">那隻貓</span></div>
+            <p>同一個簡體字，可能對應好幾個繁體字，要看上下文才知道是哪一個。</p>
+          </div>
+          <div class="card">
+            <h3>兩岸用語也不一樣</h3>
+            <div class="pair"><span class="from">打印机</span><span class="arr">→</span><span class="to">印表機</span></div>
+            <div class="pair"><span class="from">出租车</span><span class="arr">→</span><span class="to">計程車</span></div>
+            <div class="pair"><span class="from">土豆</span><span class="arr">→</span><span class="to">馬鈴薯</span></div>
+            <p>台灣的「土豆」是花生。字都對，意思卻錯了，所以必須連用語一起轉換。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 功能 -->
+      <section class="slide">
+        <p class="eyebrow">FEATURES</p>
+        <h2>我們做了什麼</h2>
+        <div class="grid g4 fill">
+          <div class="card">
+            <div class="icon i-cn">文</div>
+            <h3>文字轉換</h3>
+            <p>貼上文字，一鍵轉換，可以對調方向，也能複製結果。上限 10,000 字。</p>
+          </div>
+          <div class="card">
+            <div class="icon i-tw">檔</div>
+            <h3>字幕檔轉換</h3>
+            <p>上傳 <code>.srt</code>／<code>.txt</code>（最大 1MB），直接下載轉換好的檔案。</p>
+          </div>
+          <div class="card">
+            <div class="icon i-mix">碼</div>
+            <h3>自動判斷編碼</h3>
+            <p>UTF-8、UTF-16、Big5、GBK 都看得懂，輸出一律是 UTF-8，不會出現亂碼。</p>
+          </div>
+          <div class="card">
+            <div class="icon i-cn">修</div>
+            <h3>修正規則</h3>
+            <p>針對字典已知會轉錯的寫法，在轉換後再修正一次。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 技術選型 -->
+      <section class="slide">
+        <p class="eyebrow">TECH STACK</p>
+        <h2>技術選型</h2>
+        <div class="grid g3 fill">
+          <div class="card">
+            <h3>後端</h3>
+            <ul class="points">
+              <li><b>Node.js 18+</b>（CommonJS）</li>
+              <li><b>Express 5</b>：非同步錯誤自動交給 errorHandler，controller 不用寫 try/catch</li>
+              <li><b>multer</b>：在記憶體中處理上傳檔</li>
+              <li><b>cors</b>、<b>dotenv</b></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>轉換核心</h3>
+            <ul class="points">
+              <li><b>opencc-js</b>：開源的字典式繁簡轉換</li>
+              <li><code>cn → twp</code>：台灣正體，並轉換慣用詞</li>
+              <li><code>CustomConverter</code>：套用我們自己的修正規則</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>前端與測試</h3>
+            <ul class="points">
+              <li>原生 HTML / CSS / JS，由 Express 直接提供 <code>public/</code></li>
+              <li><b>node --test</b>：用內建的測試執行器，不另外裝套件</li>
+              <li>Postman 集合，方便手動測試</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. 架構 -->
+      <section class="slide">
+        <p class="eyebrow">ARCHITECTURE</p>
+        <h2>一個請求的旅程</h2>
+        <div class="flow">
+          <div class="step"><b>server.js</b><span>只負責 listen</span></div>
+          <div class="join">→</div>
+          <div class="step hl-cn"><b>app.js</b><span>掛上 middleware 與路由</span></div>
+          <div class="join">→</div>
+          <div class="step"><b>routes</b><span>/health<br />/api/convert</span></div>
+          <div class="join">→</div>
+          <div class="step"><b>驗證</b><span>validateConvert<br />uploadFile</span></div>
+          <div class="join">→</div>
+          <div class="step"><b>controller</b><span>處理請求、組回應</span></div>
+          <div class="join">→</div>
+          <div class="step hl-tw"><b>service</b><span>converter<br />fileService</span></div>
+        </div>
+
+        <div class="grid g2" style="margin-top: 30px;">
+          <div class="card">
+            <h3>app.js 的 middleware 順序</h3>
+            <div class="mw-row">
+              <span class="mw">CORS</span>
+              <span class="mw">express.json（100kb）</span>
+              <span class="mw">靜態檔 public/</span>
+              <span class="mw">路由</span>
+              <span class="mw">notFound</span>
+              <span class="mw">errorHandler</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>分層的好處</h3>
+            <ul class="points">
+              <li>設定只在 <code>config/index.js</code> 讀取 <code>process.env</code></li>
+              <li>service 不依賴 Express，可以單獨測試</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. API -->
+      <section class="slide">
+        <p class="eyebrow">API</p>
+        <h2>API 一覽</h2>
+        <div class="grid g2 fill" style="grid-template-columns: 1.05fr 1fr;">
+          <div class="card" style="padding: 10px 14px;">
+            <table>
+              <thead><tr><th>端點</th><th>用途</th></tr></thead>
+              <tbody>
+                <tr><td><span class="tag t-get">GET</span><code>/health</code></td><td>健康檢查</td></tr>
+                <tr><td><span class="tag t-get">GET</span><code>/api/convert/directions</code></td><td>支援的轉換方向</td></tr>
+                <tr><td><span class="tag t-post">POST</span><code>/api/convert</code></td><td>轉換 JSON 文字</td></tr>
+                <tr><td><span class="tag t-post">POST</span><code>/api/convert/file</code></td><td>上傳檔案（欄位 <code>file</code>），回傳檔案供下載</td></tr>
+              </tbody>
+            </table>
+            <p class="muted" style="font-size: 16px; padding: 10px 14px 6px;">檔案 API 會帶上 <code>X-Input-Length</code>／<code>X-Output-Length</code> 標頭，讓前端顯示字數。</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+<pre><span class="c">// POST /api/convert</span>
+{ <span class="p">"text"</span>: <span class="s">"打印机和鼠标"</span>,
+  <span class="p">"direction"</span>: <span class="s">"cn-to-tw"</span> }</pre>
+<pre><span class="c">// 200 OK</span>
+{ <span class="p">"status"</span>: <span class="s">"success"</span>,
+  <span class="p">"data"</span>: { <span class="p">"result"</span>: <span class="s">"印表機和滑鼠"</span>, ... } }
+
+<span class="c">// 400：預期中的錯誤</span>
+{ <span class="p">"status"</span>: <span class="s">"failed"</span>,
+  <span class="p">"code"</span>: <span class="s">"FILE_EMPTY"</span>,
+  <span class="p">"message"</span>: <span class="s">"檔案沒有可轉換的文字"</span> }</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. 轉換核心 -->
+      <section class="slide">
+        <p class="eyebrow">CORE</p>
+        <h2>轉換核心：兩段式轉換</h2>
+        <div class="flow" style="margin-bottom: 28px;">
+          <div class="step"><b>輸入文字</b><span>这颗梨子干你什么事</span></div>
+          <div class="join">→</div>
+          <div class="step hl-cn"><b>① opencc 字典</b><span>這顆梨子<span class="bad" style="display:inline">幹</span>你什麼事</span></div>
+          <div class="join">→</div>
+          <div class="step hl-tw"><b>② 修正規則</b><span>這顆梨子<span class="ok" style="display:inline">干</span>你什麼事</span></div>
+        </div>
+        <div class="grid g2 fill">
+<pre><span class="c">// converterService.js：方向的唯一來源</span>
+<span class="k">const</span> DIRECTIONS = {
+  <span class="s">'cn-to-tw'</span>: { from: <span class="s">'cn'</span>,  to: <span class="s">'twp'</span> },
+  <span class="s">'tw-to-cn'</span>: { from: <span class="s">'twp'</span>, to: <span class="s">'cn'</span> },
+};
+
+<span class="c">// 啟動時建立轉換器並快取起來</span>
+converters[key] = (text) =&gt;
+  <span class="n">fixRules</span>(<span class="n">baseConverter</span>(text));</pre>
+          <div class="card">
+            <h3>設計重點</h3>
+            <ul class="points">
+              <li>建立轉換器成本較高，所以<b>啟動時先建好</b>並重複使用</li>
+              <li>在 <code>DIRECTIONS</code> 新增一個方向，驗證和 <code>/directions</code> 會<b>自動跟著更新</b></li>
+              <li>修正規則<b>越長的優先</b>，所以可以用左右相同的規則保護正確用法，例如「预设立场」</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. 修正規則的取捨 -->
+      <section class="slide">
+        <p class="eyebrow">LESSON LEARNED</p>
+        <h2>修正規則的取捨：「於小姐」事件</h2>
+        <div class="grid g2 fill">
+          <div class="card">
+            <h3>我們原本想這樣修姓氏…</h3>
+            <div class="pair"><span class="from">于小姐</span><span class="arr">→</span><span class="bad">於小姐</span><span class="muted" style="font-size:18px">（字典轉錯）</span></div>
+            <p style="margin-bottom: 18px;">於是加了規則：<code>於小姐 → 于小姐</code></p>
+            <h3>結果 code review 時發現…</h3>
+            <table>
+              <tr><td>屬<b>於小姐</b></td><td class="bad">→ 屬于小姐 ✗</td></tr>
+              <tr><td>由<b>於先生</b></td><td class="bad">→ 由于先生 ✗</td></tr>
+              <tr><td>模<b>範先生</b></td><td class="bad">→ 模范先生 ✗</td></tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3>最後的決定</h3>
+            <ul class="points">
+              <li>常見詞比姓氏常出現得多，而且<b>列舉不完</b></li>
+              <li>所以<b>移除</b>姓氏規則，改寫進 <code>docs/known-limitations.md</code></li>
+              <li>補上測試，<b>防止</b>以後的規則再誤改這些詞</li>
+              <li>原則：新增規則前，先想想這個寫法會不會出現在其他正確的詞裡</li>
+            </ul>
+            <p style="margin-top: 14px; font-weight: 700; color: var(--text);">💡 寧可少修一個字，也不要誤傷一百個詞。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. 編碼判斷 -->
+      <section class="slide">
+        <p class="eyebrow">FILE ENCODING</p>
+        <h2>上傳的檔案是什麼編碼？</h2>
+        <div class="grid g2 fill" style="grid-template-columns: 1.2fr 1fr;">
+          <div class="decision">
+            <div class="row"><div class="num">1</div><div class="q">開頭是 UTF-16 BOM（<code>FF FE</code>／<code>FE FF</code>）嗎？</div><div class="res">→ UTF-16</div></div>
+            <div class="row"><div class="num">2</div><div class="q">能用 UTF-8 嚴格解碼（fatal）嗎？有沒有 BOM 都可以</div><div class="res">→ UTF-8</div></div>
+            <div class="row"><div class="num">3</div><div class="q">位元組範圍評分：Big5 的證據比 GBK 多嗎？</div><div class="res">→ Big5</div></div>
+            <div class="row"><div class="num">4</div><div class="q">以上都不是</div><div class="res">→ GB18030</div></div>
+          </div>
+          <div class="card">
+            <h3>為什麼一定要先判斷 Big5？</h3>
+            <p style="margin-bottom: 14px;">GB18030 幾乎<b>能解碼任何位元組</b>，Big5 檔案用它解碼不會報錯，只會變成亂碼。</p>
+            <ul class="points">
+              <li>Big5 證據：前導位元組 <code>A4–AF</code>，或後導位元組 <code>40–7E</code></li>
+              <li>GBK 證據：前導位元組 <code>C9–F7</code></li>
+              <li>平手時用 GB18030</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. SRT -->
+      <section class="slide">
+        <p class="eyebrow">SUBTITLES</p>
+        <h2>字幕檔：只轉換文字，不動時間軸</h2>
+        <div class="grid g2 fill">
+<pre><span class="c">// 上傳：影片.srt（GBK 編碼）</span>
+<span class="n">1</span>
+<span class="p">00:00:01,000 --&gt; 00:00:03,500</span>
+我的电脑内存不够了
+
+<span class="n">2</span>
+<span class="p">00:00:04,000 --&gt; 00:00:06,000</span>
+去买个方便面吧</pre>
+<pre><span class="c">// 下載：影片-繁體.srt（UTF-8）</span>
+<span class="n">1</span>
+<span class="p">00:00:01,000 --&gt; 00:00:03,500</span>
+<span class="s">我的電腦記憶體不夠了</span>
+
+<span class="n">2</span>
+<span class="p">00:00:04,000 --&gt; 00:00:06,000</span>
+<span class="s">去買個泡麵吧</span></pre>
+        </div>
+        <div class="grid g3" style="margin-top: 22px;">
+          <div class="card" style="padding: 16px 20px;"><p>序號行、時間軸行用正規表示式辨識，<b>原樣保留</b></p></div>
+          <div class="card" style="padding: 16px 20px;"><p>保留原本的換行符號（<code>\r\n</code>／<code>\n</code>）</p></div>
+          <div class="card" style="padding: 16px 20px;"><p>檔名會清掉不安全的字元，再加上 <code>-繁體</code>／<code>-簡體</code></p></div>
+        </div>
+      </section>
+
+      <!-- 11. 穩定與安全 -->
+      <section class="slide">
+        <p class="eyebrow">ROBUSTNESS</p>
+        <h2>穩定性與防護</h2>
+        <div class="grid g3 fill">
+          <div class="card">
+            <div class="icon i-cn">限</div>
+            <h3>頻率限制</h3>
+            <p>以 IP 為單位、固定時間窗口（預設每 60 秒 30 次），只套用在 <code>/api/convert</code>。用工廠函式建立，測試時可以自己傳參數。</p>
+          </div>
+          <div class="card">
+            <div class="icon i-tw">量</div>
+            <h3>輸入上限</h3>
+            <p>JSON body 100kb、文字 10,000 字、檔案 1MB。字數用 <code>[...text].length</code> 以 code point 計算，罕用字和 emoji 也算得準。</p>
+          </div>
+          <div class="card">
+            <div class="icon i-mix">錯</div>
+            <h3>統一的錯誤格式</h3>
+            <p>預期中的錯誤用 <code>AppError</code>，回應 <code>failed</code> 與錯誤代碼；其他錯誤一律回 500 並記錄 log，不會把內部細節洩漏給使用者。</p>
+          </div>
+        </div>
+        <p class="muted" style="margin-top: 20px; font-size: 18px;">所有參數都能透過 <code>.env</code> 調整：<code>PORT</code>、<code>CORS_ORIGIN</code>、<code>MAX_TEXT_LENGTH</code>、<code>MAX_FILE_SIZE</code>、<code>RATE_LIMIT_*</code></p>
+      </section>
+
+      <!-- 12. 測試 -->
+      <section class="slide">
+        <p class="eyebrow">TESTING</p>
+        <h2>自動化測試</h2>
+        <div class="grid g3" style="margin-bottom: 22px;">
+          <div class="card">
+            <h3><code>converterService.test.js</code></h3>
+            <p>轉換方向、慣用詞、修正規則，以及「屬於小姐」這類不能被誤改的詞</p>
+          </div>
+          <div class="card">
+            <h3><code>fileService.test.js</code></h3>
+            <p>Big5／GBK／UTF-16 判斷、SRT 保留時間軸、檔名處理</p>
+          </div>
+          <div class="card">
+            <h3><code>api.test.js</code></h3>
+            <p>完整走過每個端點：成功、驗證失敗、頻率限制、檔案下載</p>
+          </div>
+        </div>
+        <div class="grid g2 fill">
+<pre><span class="c"># 全部測試</span>
+npm test
+
+<span class="c"># 只跑單一測試</span>
+node --test --test-name-pattern=<span class="s">"GBK"</span> \
+  tests/fileService.test.js</pre>
+          <div class="card">
+            <h3>測試小技巧</h3>
+            <ul class="points">
+              <li>設定在 require 時就讀取，所以要<b>先設好環境變數再 require app</b></li>
+              <li><code>docs/samples/</code> 放了真實的 Big5、GBK、空檔與 .srt 範例</li>
+              <li>「轉過去再轉回來一樣」<b>不代表</b>轉換正確</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13. 團隊協作 -->
+      <section class="slide">
+        <p class="eyebrow">TEAMWORK</p>
+        <h2>團隊協作流程</h2>
+        <div class="grid g2 fill" style="grid-template-columns: 1.1fr 1fr;">
+          <div class="branches">
+            <div class="branch"><span class="dot" style="background: var(--bad)"></span><span class="name">main</span><span class="desc">正式環境，只接受來自 test 的 PR</span></div>
+            <div class="up">▲ 測試沒問題後發 PR</div>
+            <div class="branch"><span class="dot" style="background: #f0a030"></span><span class="name">test</span><span class="desc">整合測試，匯集所有成員的功能</span></div>
+            <div class="up">▲ 發 PR ＋ Code Review</div>
+            <div class="branch"><span class="dot" style="background: var(--tw)"></span><span class="name">feature/&lt;成員&gt;</span><span class="desc">每個成員自己的開發分支</span></div>
+          </div>
+          <div class="card">
+            <h3>Commit 格式</h3>
+<pre style="font-size: 15px; margin-bottom: 18px;">feat(api): 🎸 新增檔案上傳轉換 API
+test(api): 💍 新增 API 自動測試
+fix(web):  🐛 檔案轉換成功後停用轉換按鈕</pre>
+            <ul class="points">
+              <li>功能分支<b>不可直接合併</b>到 main</li>
+              <li>Code review 抓到了「於小姐」規則的誤改</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 14. 現場示範 -->
+      <section class="slide">
+        <p class="eyebrow">LIVE DEMO</p>
+        <h2>現場示範</h2>
+        <div class="demo">
+          <div>
+            <div class="demo-label">輸入</div>
+            <textarea id="demo-in" spellcheck="false">我的电脑内存不够，打印机和鼠标也坏了，只好打出租车去买方便面。</textarea>
+          </div>
+          <div class="mid">
+            <button class="btn" id="demo-go">轉換 →</button>
+            <button class="btn alt" id="demo-swap" title="對調方向">⇄ <span id="demo-dir">簡→繁</span></button>
+          </div>
+          <div>
+            <div class="demo-label">結果</div>
+            <textarea id="demo-out" readonly placeholder="轉換結果會顯示在這裡"></textarea>
+          </div>
+        </div>
+        <div class="samples" id="demo-samples">
+          <button data-t="这颗梨子干你什么事" data-d="cn-to-tw">干你什么事</button>
+          <button data-t="土豆炖牛肉" data-d="cn-to-tw">土豆炖牛肉</button>
+          <button data-t="头发、吃面、那只猫" data-d="cn-to-tw">一字多義</button>
+          <button data-t="這是預設值，不要有預設立場" data-d="tw-to-cn">預設／預設立場</button>
+          <button data-t="于小姐和范先生" data-d="cn-to-tw">已知限制：姓氏</button>
+        </div>
+        <p class="demo-status" id="demo-status"></p>
+        <div class="api-base" style="margin-top: auto;">
+          API 位址 <input id="api-base" value="http://localhost:3000" spellcheck="false" /> 請先執行 <code>npm run dev</code>
+        </div>
+      </section>
+
+      <!-- 15. 已知限制與未來 -->
+      <section class="slide">
+        <p class="eyebrow">WHAT'S NEXT</p>
+        <h2>已知限制與未來方向</h2>
+        <div class="grid g2 fill">
+          <div class="card">
+            <h3>字典式轉換的限制</h3>
+            <table>
+              <tr><td>于小姐和范先生</td><td class="bad">於小姐和範先生</td></tr>
+              <tr><td>产品质量很好</td><td class="bad">產品質量很好</td></tr>
+              <tr><td>优化代码</td><td class="bad">最佳化程式碼</td></tr>
+            </table>
+            <p style="margin-top: 14px;">字典不理解句子的意思，人名和部分用語差異還是可能轉錯。這些都整理在 <code>docs/known-limitations.md</code>。</p>
+          </div>
+          <div class="card">
+            <h3>接下來想做</h3>
+            <ul class="points">
+              <li><b>自訂詞庫</b>：讓使用者指定專屬規則，例如文章裡的人名「于小姐」</li>
+              <li>把「質量／品質」「最佳化／優化」這類差異加進修正規則</li>
+              <li>頻率限制改用 Redis 等共享儲存，支援多個 process</li>
+              <li>支援更多字幕格式（.ass／.vtt）</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 16. 結尾 -->
+      <section class="slide end">
+        <p class="eyebrow">THANK YOU</p>
+        <h1 class="grad">謝謝聆聽</h1>
+        <p class="lead">Q &amp; A</p>
+        <div class="chips" style="display:flex; gap:12px; margin-top: 36px; justify-content: center;">
+          <span class="chip"><code>npm install</code></span>
+          <span class="chip"><code>npm run dev</code></span>
+          <span class="chip">http://localhost:3000</span>
+        </div>
+      </section>
+
+      <div class="brand">繁簡轉換 · zh-converter</div>
+      <div class="counter" id="counter"></div>
+      <div class="progress" id="progress"></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button id="nav-prev" aria-label="上一頁">← 上一頁</button>
+    <button id="nav-full" aria-label="全螢幕">⛶ 全螢幕</button>
+    <button id="nav-next" aria-label="下一頁">下一頁 →</button>
+  </div>
+
+  <script>
+    (function () {
+      const stage = document.getElementById('stage');
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const counter = document.getElementById('counter');
+      const progress = document.getElementById('progress');
+      let current = 0;
+
+      // 依視窗大小等比縮放 1280x720 的舞台
+      function fit() {
+        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720) * 0.96;
+        stage.style.transform = 'scale(' + scale + ')';
+      }
+
+      function show(index) {
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach(function (s, i) {
+          s.classList.toggle('active', i === current);
+          s.classList.toggle('prev', i < current);
+        });
+        counter.textContent = (current + 1) + ' / ' + slides.length;
+        progress.style.width = ((current + 1) / slides.length * 100) + '%';
+        try { history.replaceState(null, '', '#' + (current + 1)); } catch (e) {}
+      }
+
+      function toggleFull() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(function () {});
+        } else {
+          document.exitFullscreen();
+        }
+      }
+
+      function isTyping(el) {
+        return el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT');
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (isTyping(document.activeElement)) {
+          if (e.key === 'Escape') document.activeElement.blur();
+          return;
+        }
+        switch (e.key) {
+          case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Enter':
+            e.preventDefault(); show(current + 1); break;
+          case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace':
+            e.preventDefault(); show(current - 1); break;
+          case 'Home': show(0); break;
+          case 'End': show(slides.length - 1); break;
+          case 'f': case 'F': toggleFull(); break;
+        }
+      });
+
+      // 觸控滑動換頁
+      let touchX = null;
+      document.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+      document.addEventListener('touchend', function (e) {
+        if (touchX === null || isTyping(e.target)) return;
+        const dx = e.changedTouches[0].clientX - touchX;
+        if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+        touchX = null;
+      });
+
+      document.getElementById('nav-prev').addEventListener('click', function () { show(current - 1); });
+      document.getElementById('nav-next').addEventListener('click', function () { show(current + 1); });
+      document.getElementById('nav-full').addEventListener('click', toggleFull);
+
+      window.addEventListener('resize', fit);
+      fit();
+      const start = parseInt(location.hash.slice(1), 10);
+      show(Number.isNaN(start) ? 0 : start - 1);
+
+      setTimeout(function () { document.getElementById('help').classList.add('hide'); }, 5000);
+
+      // ===== 現場示範：呼叫本機的 API =====
+      const demoIn = document.getElementById('demo-in');
+      const demoOut = document.getElementById('demo-out');
+      const demoGo = document.getElementById('demo-go');
+      const demoDir = document.getElementById('demo-dir');
+      const demoStatus = document.getElementById('demo-status');
+      const apiBase = document.getElementById('api-base');
+      let direction = 'cn-to-tw';
+
+      function setDirection(d) {
+        direction = d;
+        demoDir.textContent = d === 'cn-to-tw' ? '簡→繁' : '繁→簡';
+      }
+
+      function setStatus(text, ok) {
+        demoStatus.textContent = text;
+        demoStatus.style.color = ok ? 'var(--ok)' : 'var(--bad)';
+      }
+
+      async function runDemo() {
+        const text = demoIn.value;
+        if (!text.trim()) { setStatus('請先輸入文字', false); return; }
+        demoGo.disabled = true;
+        setStatus('轉換中…', true);
+        const base = apiBase.value.replace(/\/+$/, '');
+        const started = performance.now();
+        try {
+          const res = await fetch(base + '/api/convert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, direction: direction })
+          });
+          const body = await res.json();
+          if (body.status !== 'success') {
+            setStatus('❌ ' + (body.code || res.status) + '：' + (body.message || '轉換失敗'), false);
+            return;
+          }
+          const data = body.data || {};
+          demoOut.value = data.result !== undefined ? data.result : (data.output !== undefined ? data.output : JSON.stringify(data));
+          const ms = Math.round(performance.now() - started);
+          setStatus('✅ 轉換成功，共 ' + [...text].length + ' 字，耗時 ' + ms + ' ms', true);
+        } catch (err) {
+          setStatus('⚠️ 連不到 API，請確認已執行 npm run dev，且位址正確', false);
+        } finally {
+          demoGo.disabled = false;
+        }
+      }
+
+      demoGo.addEventListener('click', runDemo);
+      document.getElementById('demo-swap').addEventListener('click', function () {
+        setDirection(direction === 'cn-to-tw' ? 'tw-to-cn' : 'cn-to-tw');
+        if (demoOut.value) { demoIn.value = demoOut.value; demoOut.value = ''; }
+      });
+      document.getElementById('demo-samples').addEventListener('click', function (e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        demoIn.value = btn.dataset.t;
+        setDirection(btn.dataset.d);
+        runDemo();
+      });
+    })();
+  </script>
+</body>
+</html>
