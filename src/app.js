@@ -23,7 +23,10 @@ app.use(
   })
 );
 app.use(express.json({ limit: '100kb' })); // 解析 JSON body，並限制大小
-app.use(express.static(path.join(__dirname, '..', 'public'))); // 提供前端靜態檔案
+// Cloudflare Workers 沒有 __dirname，靜態檔案改由 Cloudflare 的 assets 提供
+if (typeof __dirname !== 'undefined') {
+  app.use(express.static(path.join(__dirname, '..', 'public'))); // 提供前端靜態檔案
+}
 
 // ===== 2. 路由 =====
 app.use('/health', healthRouter);
