@@ -68,4 +68,4 @@ jobs:
             --title "release: 🚀 test 合併到 main" \
             --body "test 分支的測試已通過（[執行紀錄](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})），請審核後合併。
 
-          合併後會自動在 main 上重新測試，通過才部署到 Cloudflare Workers。"
+          合併後 Cloudflare 會從 GitHub 的 main 分支自動部署。"
