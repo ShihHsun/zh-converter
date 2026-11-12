@@ -400,6 +400,40 @@
           }
         },
         {
+          "name": "file 成功（中文檔名 .srt）",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "docs/samples/字幕範例.srt"
+                },
+                {
+                  "key": "direction",
+                  "value": "cn-to-tw",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/convert/file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "convert",
+                "file"
+              ]
+            },
+            "description": "下載檔名應該是「字幕範例-繁體.srt」，在回應標頭 Content-Disposition 的 filename* 可以看到"
+          }
+        },
+        {
           "name": "file 成功（GBK .txt 簡轉繁）",
           "request": {
             "method": "POST",

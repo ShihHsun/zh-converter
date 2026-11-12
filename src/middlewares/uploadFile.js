@@ -7,6 +7,8 @@ const config = require('../config');
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: config.maxFileSize, files: 1 },
+  // multer 預設用 latin1 讀檔名，中文檔名會變亂碼；瀏覽器送出的檔名是 UTF-8
+  defParamCharset: 'utf8',
 }).single('file');
 
 // 把 multer 的錯誤轉成統一的錯誤格式

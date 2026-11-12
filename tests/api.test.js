@@ -144,6 +144,17 @@ test('檔案轉換：.srt 簡轉繁，時間軸不變，回傳檔案與字數標
   assert.match(text, /這個軟體的預設設定在資料庫裡/);
 });
 
+test('檔案轉換：中文檔名下載時不會變亂碼', async () => {
+  const res = await postFile([['file', '字幕.srt', sample('sample.srt')]], {
+    direction: 'cn-to-tw',
+  });
+  assert.strictEqual(res.status, 200);
+
+  // 從 filename*=UTF-8''... 取出檔名並解碼，應該是「字幕-繁體.srt」
+  const encoded = res.headers.get('content-disposition').match(/filename\*=UTF-8''(.+)$/)[1];
+  assert.strictEqual(decodeURIComponent(encoded), '字幕-繁體.srt');
+});
+
 test('檔案轉換：GBK 編碼的 .txt 也能正確讀取', async () => {
   const res = await postFile([['file', 'sample-gbk.txt', sample('sample-gbk.txt')]]);
   assert.strictEqual(res.status, 200);
