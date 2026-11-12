@@ -314,64 +314,7 @@
     .branch .dot { width: 16px; height: 16px; border-radius: 50%; flex: none; }
     .up { text-align: center; color: var(--muted); font-size: 16px; margin: -6px 0; }
 
-    /* ===== 現場示範 ===== */
-    .demo { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch; }
-    .demo textarea {
-      width: 100%;
-      height: 220px;
-      resize: none;
-      border-radius: 16px;
-      border: 2px solid transparent;
-      background: #fff;
-      padding: 16px 18px;
-      font: inherit;
-      font-size: 22px;
-      line-height: 1.6;
-      color: var(--text);
-      outline: none;
-    }
-    .demo textarea:focus { border-color: var(--cn); }
-    .demo #demo-out { background: var(--tw-soft); }
-    .demo .mid { display: flex; flex-direction: column; justify-content: center; gap: 12px; }
-    .btn {
-      font: inherit;
-      font-size: 18px;
-      font-weight: 700;
-      border: none;
-      border-radius: 12px;
-      padding: 12px 20px;
-      cursor: pointer;
-      color: #fff;
-      background: linear-gradient(135deg, var(--cn), var(--cn-accent));
-    }
-    .btn.alt { background: #fff; color: var(--text); border: 1px solid var(--line); }
-    .btn:disabled { opacity: 0.5; cursor: wait; }
-    .demo-label { font-size: 15px; font-weight: 700; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.06em; }
-    .demo-status { margin-top: 16px; font-size: 17px; min-height: 26px; }
-    .samples { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-    .samples button {
-      font: inherit;
-      font-size: 16px;
-      padding: 7px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: #fff;
-      cursor: pointer;
-      color: var(--text);
-    }
-    .samples button:hover { border-color: var(--cn); color: var(--cn); }
-    .api-base { font-size: 15px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
-    .api-base input {
-      font: inherit;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 14px;
-      padding: 4px 8px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      width: 240px;
-    }
-
-    /* ===== 結尾 ===== */
+    /* ===== 置中標題頁（現場示範、結尾） ===== */
     .end { justify-content: center; align-items: center; text-align: center; }
     .end h1 { font-size: 96px; }
     .end .lead { margin-top: 20px; }
@@ -482,10 +425,8 @@
       <section class="slide cover">
         <p class="eyebrow">HEX SCHOOL · 團隊專案</p>
         <h1 class="grad">繁簡轉換</h1>
-        <p class="sub">簡體 ⇄ 繁體（台灣用詞）轉換 API ＋ 網頁</p>
+        <p class="sub">簡體 ⇄ 繁體（台灣用詞）</p>
         <div class="chips">
-          <span class="chip">Node.js 18+</span>
-          <span class="chip">Express 5</span>
           <span class="chip">opencc-js</span>
           <span class="chip">文字 & 字幕檔</span>
         </div>
@@ -526,7 +467,7 @@
           <div class="card">
             <div class="icon i-cn">文</div>
             <h3>文字轉換</h3>
-            <p>貼上文字，一鍵轉換，可以對調方向，也能複製結果。上限 10,000 字。</p>
+            <p>貼上文字，一鍵轉換，可以對調方向，也能複製結果。</p>
           </div>
           <div class="card">
             <div class="icon i-tw">檔</div>
@@ -758,38 +699,13 @@ converters[key] = (text) =&gt;
 <span class="p">00:00:04,000 --&gt; 00:00:06,000</span>
 <span class="s">去買個泡麵吧</span></pre>
         </div>
-        <div class="grid g3" style="margin-top: 22px;">
+        <div class="grid g2" style="margin-top: 22px;">
           <div class="card" style="padding: 16px 20px;"><p>序號行、時間軸行用正規表示式辨識，<b>原樣保留</b></p></div>
-          <div class="card" style="padding: 16px 20px;"><p>保留原本的換行符號（<code>\r\n</code>／<code>\n</code>）</p></div>
           <div class="card" style="padding: 16px 20px;"><p>檔名會清掉不安全的字元，再加上 <code>-繁體</code>／<code>-簡體</code></p></div>
         </div>
       </section>
 
-      <!-- 11. 穩定與安全 -->
-      <section class="slide">
-        <p class="eyebrow">ROBUSTNESS</p>
-        <h2>穩定性與防護</h2>
-        <div class="grid g3 fill">
-          <div class="card">
-            <div class="icon i-cn">限</div>
-            <h3>頻率限制</h3>
-            <p>以 IP 為單位、固定時間窗口（預設每 60 秒 30 次），只套用在 <code>/api/convert</code>。用工廠函式建立，測試時可以自己傳參數。</p>
-          </div>
-          <div class="card">
-            <div class="icon i-tw">量</div>
-            <h3>輸入上限</h3>
-            <p>JSON body 100kb、文字 10,000 字、檔案 1MB。字數用 <code>[...text].length</code> 以 code point 計算，罕用字和 emoji 也算得準。</p>
-          </div>
-          <div class="card">
-            <div class="icon i-mix">錯</div>
-            <h3>統一的錯誤格式</h3>
-            <p>預期中的錯誤用 <code>AppError</code>，回應 <code>failed</code> 與錯誤代碼；其他錯誤一律回 500 並記錄 log，不會把內部細節洩漏給使用者。</p>
-          </div>
-        </div>
-        <p class="muted" style="margin-top: 20px; font-size: 18px;">所有參數都能透過 <code>.env</code> 調整：<code>PORT</code>、<code>CORS_ORIGIN</code>、<code>MAX_TEXT_LENGTH</code>、<code>MAX_FILE_SIZE</code>、<code>RATE_LIMIT_*</code></p>
-      </section>
-
-      <!-- 12. 測試 -->
+      <!-- 11. 測試 -->
       <section class="slide">
         <p class="eyebrow">TESTING</p>
         <h2>自動化測試</h2>
@@ -825,63 +741,13 @@ node --test --test-name-pattern=<span class="s">"GBK"</span> \
         </div>
       </section>
 
-      <!-- 13. 團隊協作 -->
-      <section class="slide">
-        <p class="eyebrow">TEAMWORK</p>
-        <h2>團隊協作流程</h2>
-        <div class="grid g2 fill" style="grid-template-columns: 1.1fr 1fr;">
-          <div class="branches">
-            <div class="branch"><span class="dot" style="background: var(--bad)"></span><span class="name">main</span><span class="desc">正式環境，只接受來自 test 的 PR</span></div>
-            <div class="up">▲ 測試沒問題後發 PR</div>
-            <div class="branch"><span class="dot" style="background: #f0a030"></span><span class="name">test</span><span class="desc">整合測試，匯集所有成員的功能</span></div>
-            <div class="up">▲ 發 PR ＋ Code Review</div>
-            <div class="branch"><span class="dot" style="background: var(--tw)"></span><span class="name">feature/&lt;成員&gt;</span><span class="desc">每個成員自己的開發分支</span></div>
-          </div>
-          <div class="card">
-            <h3>Commit 格式</h3>
-<pre style="font-size: 15px; margin-bottom: 18px;">feat(api): 🎸 新增檔案上傳轉換 API
-test(api): 💍 新增 API 自動測試
-fix(web):  🐛 檔案轉換成功後停用轉換按鈕</pre>
-            <ul class="points">
-              <li>功能分支<b>不可直接合併</b>到 main</li>
-              <li>Code review 抓到了「於小姐」規則的誤改</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <!-- 14. 現場示範 -->
-      <section class="slide">
+      <!-- 12. 現場示範 -->
+      <section class="slide end">
         <p class="eyebrow">LIVE DEMO</p>
-        <h2>現場示範</h2>
-        <div class="demo">
-          <div>
-            <div class="demo-label">輸入</div>
-            <textarea id="demo-in" spellcheck="false">我的电脑内存不够，打印机和鼠标也坏了，只好打出租车去买方便面。</textarea>
-          </div>
-          <div class="mid">
-            <button class="btn" id="demo-go">轉換 →</button>
-            <button class="btn alt" id="demo-swap" title="對調方向">⇄ <span id="demo-dir">簡→繁</span></button>
-          </div>
-          <div>
-            <div class="demo-label">結果</div>
-            <textarea id="demo-out" readonly placeholder="轉換結果會顯示在這裡"></textarea>
-          </div>
-        </div>
-        <div class="samples" id="demo-samples">
-          <button data-t="这颗梨子干你什么事" data-d="cn-to-tw">干你什么事</button>
-          <button data-t="土豆炖牛肉" data-d="cn-to-tw">土豆炖牛肉</button>
-          <button data-t="头发、吃面、那只猫" data-d="cn-to-tw">一字多義</button>
-          <button data-t="這是預設值，不要有預設立場" data-d="tw-to-cn">預設／預設立場</button>
-          <button data-t="于小姐和范先生" data-d="cn-to-tw">已知限制：姓氏</button>
-        </div>
-        <p class="demo-status" id="demo-status"></p>
-        <div class="api-base" style="margin-top: auto;">
-          API 位址 <input id="api-base" value="http://localhost:3000" spellcheck="false" /> 請先執行 <code>npm run dev</code>
-        </div>
+        <h1 class="grad">現場示範</h1>
       </section>
 
-      <!-- 15. 已知限制與未來 -->
+      <!-- 13. 已知限制與未來 -->
       <section class="slide">
         <p class="eyebrow">WHAT'S NEXT</p>
         <h2>已知限制與未來方向</h2>
@@ -900,23 +766,17 @@ fix(web):  🐛 檔案轉換成功後停用轉換按鈕</pre>
             <ul class="points">
               <li><b>自訂詞庫</b>：讓使用者指定專屬規則，例如文章裡的人名「于小姐」</li>
               <li>把「質量／品質」「最佳化／優化」這類差異加進修正規則</li>
-              <li>頻率限制改用 Redis 等共享儲存，支援多個 process</li>
               <li>支援更多字幕格式（.ass／.vtt）</li>
             </ul>
           </div>
         </div>
       </section>
 
-      <!-- 16. 結尾 -->
+      <!-- 14. 結尾 -->
       <section class="slide end">
         <p class="eyebrow">THANK YOU</p>
         <h1 class="grad">謝謝聆聽</h1>
         <p class="lead">Q &amp; A</p>
-        <div class="chips" style="display:flex; gap:12px; margin-top: 36px; justify-content: center;">
-          <span class="chip"><code>npm install</code></span>
-          <span class="chip"><code>npm run dev</code></span>
-          <span class="chip">http://localhost:3000</span>
-        </div>
       </section>
 
       <div class="brand">繁簡轉換 · zh-converter</div>
@@ -946,7 +806,8 @@ fix(web):  🐛 檔案轉換成功後停用轉換按鈕</pre>
       }
 
       function show(index) {
-        current = Math.max(0, Math.min(slides.length - 1, index));
+        // 頭尾銜接：最後一頁再往後回到第一頁，第一頁再往前到最後一頁
+        current = ((index % slides.length) + slides.length) % slides.length;
         slides.forEach(function (s, i) {
           s.classList.toggle('active', i === current);
           s.classList.toggle('prev', i < current);
@@ -1004,67 +865,6 @@ fix(web):  🐛 檔案轉換成功後停用轉換按鈕</pre>
       show(Number.isNaN(start) ? 0 : start - 1);
 
       setTimeout(function () { document.getElementById('help').classList.add('hide'); }, 5000);
-
-      // ===== 現場示範：呼叫本機的 API =====
-      const demoIn = document.getElementById('demo-in');
-      const demoOut = document.getElementById('demo-out');
-      const demoGo = document.getElementById('demo-go');
-      const demoDir = document.getElementById('demo-dir');
-      const demoStatus = document.getElementById('demo-status');
-      const apiBase = document.getElementById('api-base');
-      let direction = 'cn-to-tw';
-
-      function setDirection(d) {
-        direction = d;
-        demoDir.textContent = d === 'cn-to-tw' ? '簡→繁' : '繁→簡';
-      }
-
-      function setStatus(text, ok) {
-        demoStatus.textContent = text;
-        demoStatus.style.color = ok ? 'var(--ok)' : 'var(--bad)';
-      }
-
-      async function runDemo() {
-        const text = demoIn.value;
-        if (!text.trim()) { setStatus('請先輸入文字', false); return; }
-        demoGo.disabled = true;
-        setStatus('轉換中…', true);
-        const base = apiBase.value.replace(/\/+$/, '');
-        const started = performance.now();
-        try {
-          const res = await fetch(base + '/api/convert', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text, direction: direction })
-          });
-          const body = await res.json();
-          if (body.status !== 'success') {
-            setStatus('❌ ' + (body.code || res.status) + '：' + (body.message || '轉換失敗'), false);
-            return;
-          }
-          const data = body.data || {};
-          demoOut.value = data.result !== undefined ? data.result : (data.output !== undefined ? data.output : JSON.stringify(data));
-          const ms = Math.round(performance.now() - started);
-          setStatus('✅ 轉換成功，共 ' + [...text].length + ' 字，耗時 ' + ms + ' ms', true);
-        } catch (err) {
-          setStatus('⚠️ 連不到 API，請確認已執行 npm run dev，且位址正確', false);
-        } finally {
-          demoGo.disabled = false;
-        }
-      }
-
-      demoGo.addEventListener('click', runDemo);
-      document.getElementById('demo-swap').addEventListener('click', function () {
-        setDirection(direction === 'cn-to-tw' ? 'tw-to-cn' : 'cn-to-tw');
-        if (demoOut.value) { demoIn.value = demoOut.value; demoOut.value = ''; }
-      });
-      document.getElementById('demo-samples').addEventListener('click', function (e) {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        demoIn.value = btn.dataset.t;
-        setDirection(btn.dataset.d);
-        runDemo();
-      });
     })();
   </script>
 </body>
