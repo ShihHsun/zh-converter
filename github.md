@@ -95,6 +95,116 @@ git push -u origin feature/ming
 
 ---
 
+## 🔁 PR 流程詳解
+
+```
+feature/<名字>  ──PR──>  test  ──PR──>  main
+   (個人開發)          (整合測試)      (正式環境)
+```
+
+> 本地的 `feature/test` 是用來同步 GitHub 上 `test` 的分支（追蹤 `origin/test`），**不會推到 GitHub，也不會出現在 PR 中**。PR 的目標一律選 GitHub 上的 `test`。
+
+### 一、開始開發前：同步最新的 test
+
+```bash
+git switch feature/test
+git pull                    # 從 GitHub 的 test 拉最新內容
+
+git switch feature/<名字>
+git merge feature/test      # 把組員的成果合併進來
+npm test                    # 確認合併後沒壞
+```
+
+> 每次開始新功能前、發 PR 前都要做一次，衝突才不會越積越大。
+
+### 二、開發與提交
+
+```bash
+git status
+git add <檔案>
+git commit -m "feat: 新增 xxx 功能"
+git push                    # 第一次推送要用 git push -u origin feature/<名字>
+```
+
+**Commit 訊息格式：**
+
+| 前綴 | 用途 |
+| --- | --- |
+| `feat:` | 新功能 |
+| `fix:` | 修 bug |
+| `docs:` | 文件 |
+| `style:` | 樣式調整，不影響邏輯 |
+| `test:` | 測試 |
+| `refactor:` | 重構 |
+
+### 三、發 PR：feature → test
+
+**發 PR 前的檢查清單：**
+
+- [ ] 已合併最新的 `test`（第一步）
+- [ ] `npm test` 全部通過
+- [ ] 實際開網頁或呼叫 API 試過功能
+- [ ] 沒有不該提交的檔案，例如 `.env` 或除錯用的程式
+
+**方法 A：用 `gh` 指令**（需先安裝 GitHub CLI 並執行 `gh auth login`）
+
+```bash
+gh pr create --base test --head feature/<名字> \
+  --title "feat: 新增 xxx 功能" \
+  --body "## 修改內容
+- ...
+
+## 測試方式
+- npm test 通過
+- ..."
+```
+
+**方法 B：在 GitHub 網頁操作**
+
+1. 進入 GitHub 專案頁面，點 **Compare & pull request**。
+2. 設定方向：`base: test` ← `compare: feature/<名字>`。⚠️ base 預設可能是 `main`，記得改成 `test`。
+3. 填寫標題和說明，點 **Create pull request**。
+
+### 四、Code Review 與合併
+
+```bash
+gh pr list                  # 查看目前開啟的 PR
+gh pr list --state all      # 查看所有 PR（含已合併、已關閉）
+gh pr view <編號>           # 查看某個 PR 的內容
+gh pr diff <編號>           # 查看修改了哪些程式
+gh pr checkout <編號>       # 切到該 PR 的分支，在本地測試
+gh pr review <編號> --approve  # 核准
+gh pr merge <編號> --merge     # 合併（或在網頁上按 Merge pull request）
+```
+
+- 組員 review 沒問題後才合併，盡量不要自己核准自己的 PR。
+- 被要求修改時，在同一個分支繼續 commit 和 push，PR 會自動更新，不用重開。
+
+### 五、合併後：通知組員同步
+
+PR 合併進 `test` 後，其他人要重做第一步，把最新的 `test` 合併到自己的分支。
+
+### 六、上線：test → main
+
+`test` 上的功能都測試沒問題後，由專案負責人發 PR：
+
+```bash
+gh pr create --base main --head test \
+  --title "release: 第一版上線" \
+  --body "包含 PR #1 ~ #N 的功能"
+```
+
+### ⚠️ PR 注意事項
+
+1. **PR 的 base 一定要確認。** 功能分支要發到 `test`，不能直接發到 `main`。
+2. **不要直接 push 到 `test` 或 `main`。** 一律透過 PR，可以在 GitHub 設定 Branch protection 強制執行。
+3. **`feature/test` 只用來同步。** 不要在上面 commit，也不要拿它發 PR。
+4. **一個 PR 只做一件事。** 改動越小越容易 review，出問題也好回復。
+5. **合併後跑測試。** 沒有衝突不代表程式沒壞。
+6. **刪除檔案要特別說明。** PR 中刪除的檔案，合併後在 `test` 上也會被刪掉，要在 PR 說明中寫出來。
+
+---
+
 ## 📝 常用 Git 指令速查表 (Cheat Sheet)
 
 | 動作目的 | 終端機指令 (Terminal) |
