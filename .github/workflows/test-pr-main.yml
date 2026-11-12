@@ -1,0 +1,71 @@
+# test 分支更新 → 跑測試 → 通過後自動開 PR 到 main（由人工審核合併）
+#
+# 需要在 Settings → Actions → General 勾選：
+#   「Allow GitHub Actions to create and approve pull requests」
+
+name: Test → PR to main
+
+on:
+  push:
+    branches: [test]
+  workflow_dispatch: # 允許在 Actions 頁面手動觸發
+
+concurrency:
+  group: test-pr-main
+  cancel-in-progress: true # test 又有新推送時，取消舊的那次
+
+jobs:
+  # 1. 在 test 分支上跑測試，並確認 Worker 能正常打包
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+
+      - name: 確認 Worker 能打包（不會真的部署）
+        run: npx wrangler deploy --dry-run
+
+  # 2. 測試通過後，開 test → main 的 PR（已經有就不重複開）
+  open-pr:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 開 PR 到 main
+        run: |
+          # test 沒有 main 以外的新提交就不用開
+          ahead=$(git rev-list --count origin/main..origin/test)
+          if [ "$ahead" -eq 0 ]; then
+            echo "test 沒有新的提交，不需要開 PR"
+            exit 0
+          fi
+
+          # 已經有開著的 PR 就不重複開（推送到 test 時 PR 會自動更新）
+          existing=$(gh pr list --base main --head test --state open --json url --jq '.[0].url')
+          if [ -n "$existing" ]; then
+            echo "已經有開著的 PR：$existing"
+            exit 0
+          fi
+
+          gh pr create \
+            --base main \
+            --head test \
+            --title "release: 🚀 test 合併到 main" \
+            --body "test 分支的測試已通過（[執行紀錄](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})），請審核後合併。
+
+          合併後會自動在 main 上重新測試，通過才部署到 Cloudflare Workers。"

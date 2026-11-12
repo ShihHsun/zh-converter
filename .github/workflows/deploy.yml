@@ -1,0 +1,37 @@
+# main 更新（PR 合併）→ 再跑一次測試 → 通過才部署到 Cloudflare Workers
+#
+# 需要先在 Settings → Secrets and variables → Actions 新增：
+#   CLOUDFLARE_API_TOKEN   （Cloudflare 的 API Token，權限選「Edit Cloudflare Workers」範本）
+#   CLOUDFLARE_ACCOUNT_ID  （Cloudflare 帳號 ID）
+
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false # 部署進行中不要中斷，排隊等它跑完
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+
+      - name: 部署到 Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
