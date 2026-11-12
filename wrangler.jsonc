@@ -3,5 +3,14 @@
   "main": "worker.js",
   "compatibility_date": "2025-09-15",
   "compatibility_flags": ["nodejs_compat"],
-  "assets": { "directory": "./public" }
+  "assets": { "directory": "./public" },
+  // 頻率限制：同一個 IP 每 60 秒最多 30 次（period 只能是 10 或 60）
+  // namespace_id 是自訂的整數字串，同一個帳號內不要跟其他 Worker 重複
+  "ratelimits": [
+    {
+      "name": "RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 30, "period": 60 }
+    }
+  ]
 }

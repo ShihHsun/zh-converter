@@ -221,3 +221,52 @@ test('請求太頻繁 → RATE_LIMITED', async () => {
     s.close();
   }
 });
+
+test('有 Cloudflare binding 時改用 binding 計數', async () => {
+  // 假的 binding：每個 key 只允許 1 次，並記錄收到的 key
+  const keys = [];
+  const fakeBinding = {
+    async limit({ key }) {
+      keys.push(key);
+      return { success: keys.filter((k) => k === key).length <= 1 };
+    },
+  };
+
+  const limited = express();
+  limited.locals.rateLimitBinding = fakeBinding;
+  limited.use(createRateLimiter({ windowMs: 60 * 1000, max: 1000 }), (req, res) => res.json({ ok: true }));
+  limited.use(errorHandler);
+  const s = limited.listen(0);
+  await new Promise((resolve) => s.once('listening', resolve));
+  const url = `http://localhost:${s.address().port}`;
+  const headers = { 'CF-Connecting-IP': '203.0.113.7' };
+
+  try {
+    assert.strictEqual((await fetch(url, { headers })).status, 200);
+    // 記憶體版上限是 1000，會被擋代表確實走了 binding
+    await assertError(await fetch(url, { headers }), 429, 'RATE_LIMITED');
+    assert.deepStrictEqual(keys, ['203.0.113.7', '203.0.113.7']);
+  } finally {
+    s.close();
+  }
+});
+
+test('binding 發生錯誤時放行請求，不讓 API 跟著掛掉', async () => {
+  const limited = express();
+  limited.locals.rateLimitBinding = {
+    async limit() {
+      throw new Error('binding 故障');
+    },
+  };
+  limited.use(createRateLimiter(), (req, res) => res.json({ ok: true }));
+  limited.use(errorHandler);
+  const s = limited.listen(0);
+  await new Promise((resolve) => s.once('listening', resolve));
+
+  try {
+    const res = await fetch(`http://localhost:${s.address().port}`);
+    assert.strictEqual(res.status, 200);
+  } finally {
+    s.close();
+  }
+});
