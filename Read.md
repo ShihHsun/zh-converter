@@ -6,13 +6,15 @@
 │   │   └── index.js               # 集中讀環境變數、給預設值
 │   ├── routes/
 │   │   ├── health.js              # GET /health
-│   │   └── convert.js             # POST /api/convert
+│   │   └── convert.js             # /api/convert、/api/convert/file、/api/convert/directions
 │   ├── controllers/
 │   │   └── convertController.js   # 從 req 取值、呼叫 service、組回應
 │   ├── services/
-│   │   └── converterService.js    # 包裝 opencc-js 邏輯
+│   │   ├── converterService.js    # 包裝 opencc-js 邏輯
+│   │   └── fileService.js         # 上傳檔案的編碼判斷、.txt/.srt 轉換
 │   ├── middlewares/
 │   │   ├── validateConvert.js     # 檢查 text 與 direction
+│   │   ├── uploadFile.js          # 用 multer 接收上傳檔案、轉換上傳錯誤
 │   │   ├── rateLimiter.js         # 簡單的請求頻率限制
 │   │   ├── notFound.js            # 找不到路由 → 404
 │   │   └── errorHandler.js        # 統一錯誤出口

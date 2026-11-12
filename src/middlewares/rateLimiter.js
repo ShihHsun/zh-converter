@@ -7,18 +7,23 @@ function createRateLimiter({ windowMs, max } = config.rateLimit) {
   // key：用戶端 IP；value：{ count: 已請求次數, resetAt: 窗口結束時間 }
   const hits = new Map();
 
-  // 定期清除已過期的紀錄，避免 Map 無限成長
-  const cleanup = setInterval(() => {
-    const now = Date.now();
+  let nextCleanupAt = Date.now() + windowMs;
+
+  // 清除已過期的紀錄，避免 Map 無限成長
+  // 不用 setInterval：Cloudflare Workers 不允許在全域範圍設定計時器，改成在請求時順便清除
+  function cleanup(now) {
+    if (now < nextCleanupAt) return;
     for (const [ip, entry] of hits) {
       if (entry.resetAt <= now) hits.delete(ip);
     }
-  }, windowMs);
-  cleanup.unref(); // 不讓這個計時器阻止程式結束
+    nextCleanupAt = now + windowMs;
+  }
 
   return function rateLimiter(req, res, next) {
     const now = Date.now();
-    const ip = req.ip;
+    cleanup(now);
+    // 部署在 Cloudflare 時，真實用戶端 IP 在 CF-Connecting-IP 標頭；本機執行時沒有此標頭，改用 req.ip
+    const ip = req.get('cf-connecting-ip') || req.ip;
     let entry = hits.get(ip);
 
     // 第一次請求，或上一個窗口已結束 → 開新窗口
@@ -35,7 +40,7 @@ function createRateLimiter({ windowMs, max } = config.rateLimit) {
 
     if (entry.count > max) {
       res.set('Retry-After', String(Math.ceil((entry.resetAt - now) / 1000)));
-      return next(new AppError('請求過於頻繁，請稍後再試', 429, 'RATE_LIMITED'));
+      return next(new AppError(429, 'RATE_LIMITED', '請求太頻繁，請稍後再試'));
     }
 
     next();
