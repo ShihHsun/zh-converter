@@ -55,11 +55,16 @@ git push -u origin test
 成員在開發新功能前，必須基於最新的 `test` 分支來建立自己的開發分支。
 
 ```bash
-# 1. 切換到 test 分支，並拉取遠端最新進度
-git checkout test
+# 0. 第一次使用時，先建立本地的 feature/test 並追蹤 origin/test（只需做一次）
+#    本地名稱和遠端不同，Git 不會自動建立，直接 git switch feature/test 會失敗
+git fetch origin
+git switch -c feature/test --track origin/test
+
+# 1. 切換到 feature/test 分支（追蹤 origin/test），並拉取遠端最新進度
+git checkout feature/test
 git pull origin test
 
-# 2. 從 test 建立個人專屬分支 (範例名稱：feature/ming)
+# 2. 從 feature/test 建立個人專屬分支 (範例名稱：feature/ming)
 git checkout -b feature/ming
 
 # --- 在這裡進行程式碼開發、修改 ---
@@ -244,8 +249,8 @@ git fetch --prune          # 同時清除遠端已刪除分支的本地紀錄（
 ### 3. 切換本地分支
 
 ```bash
-git switch test            # 新版寫法（推薦）
-git checkout test          # 舊版寫法，效果相同
+git switch feature/test    # 新版寫法（推薦）
+git checkout feature/test  # 舊版寫法，效果相同
 git switch -               # 切回上一個分支
 ```
 
@@ -265,7 +270,7 @@ git checkout -b feature/jin origin/feature/jin    # 舊寫法
 ### 5. 建立本地新分支並推到遠端
 
 ```bash
-git switch -c feature/ming test     # 從 test 建立新分支
+git switch -c feature/ming feature/test  # 從 feature/test 建立新分支
 git push -u origin feature/ming     # 第一次推送加 -u 建立追蹤關係
 git push                            # 之後直接 push 即可
 ```
@@ -300,13 +305,13 @@ git remote remove upstream          # 移除遠端
 1. **切換前先確認工作區乾淨**：先執行 `git status`。有未 commit 的修改時，切換可能失敗，或把修改帶到另一個分支。可以先暫存：
    ```bash
    git stash            # 暫存修改
-   git switch test
+   git switch feature/test
    git stash pop        # 回來後再取出
    ```
 2. **先 fetch 再切換**：避免看不到新分支，或拿到舊版本。
 3. **不要 checkout `origin/xxx`**：遠端分支請用 `git switch xxx` 建立本地追蹤分支。
 4. **第一次 push 記得加 `-u`**：之後才能直接 `git pull` / `git push`。
-5. **確認自己在哪個分支再 commit**：避免把修改直接提交到 `main` 或 `test`，應在 `feature/*` 開發後發 PR。
+5. **確認自己在哪個分支再 commit**：避免把修改直接提交到 `main` 或 `feature/test`，應在 `feature/*` 開發後發 PR。
 6. **`-D` 與 `--delete` 要小心**：強制刪除前，先確認內容已合併或確定不需要。
 7. **不要對共用分支 rebase / force push**：改寫已推送的歷史會打亂其他人的本地版本。真的需要時，請用 `git push --force-with-lease`，比 `--force` 安全。
 
@@ -314,7 +319,7 @@ git remote remove upstream          # 移除遠端
 
 ```bash
 # 開始新功能
-git switch test
+git switch feature/test
 git pull
 git switch -c feature/xxx
 # ...修改、commit...
