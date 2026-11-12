@@ -55,11 +55,16 @@ git push -u origin test
 成員在開發新功能前，必須基於最新的 `test` 分支來建立自己的開發分支。
 
 ```bash
-# 1. 切換到 test 分支，並拉取遠端最新進度
-git checkout test
+# 0. 第一次使用時，先建立本地的 feature/test 並追蹤 origin/test（只需做一次）
+#    本地名稱和遠端不同，Git 不會自動建立，直接 git switch feature/test 會失敗
+git fetch origin
+git switch -c feature/test --track origin/test
+
+# 1. 切換到 feature/test 分支（追蹤 origin/test），並拉取遠端最新進度
+git checkout feature/test
 git pull origin test
 
-# 2. 從 test 建立個人專屬分支 (範例名稱：feature/ming)
+# 2. 從 feature/test 建立個人專屬分支 (範例名稱：feature/ming)
 git checkout -b feature/ming
 
 # --- 在這裡進行程式碼開發、修改 ---
@@ -95,6 +100,116 @@ git push -u origin feature/ming
 
 ---
 
+## 🔁 PR 流程詳解
+
+```
+feature/<名字>  ──PR──>  test  ──PR──>  main
+   (個人開發)          (整合測試)      (正式環境)
+```
+
+> 本地的 `feature/test` 是用來同步 GitHub 上 `test` 的分支（追蹤 `origin/test`），**不會推到 GitHub，也不會出現在 PR 中**。PR 的目標一律選 GitHub 上的 `test`。
+
+### 一、開始開發前：同步最新的 test
+
+```bash
+git switch feature/test
+git pull                    # 從 GitHub 的 test 拉最新內容
+
+git switch feature/<名字>
+git merge feature/test      # 把組員的成果合併進來
+npm test                    # 確認合併後沒壞
+```
+
+> 每次開始新功能前、發 PR 前都要做一次，衝突才不會越積越大。
+
+### 二、開發與提交
+
+```bash
+git status
+git add <檔案>
+git commit -m "feat: 新增 xxx 功能"
+git push                    # 第一次推送要用 git push -u origin feature/<名字>
+```
+
+**Commit 訊息格式：**
+
+| 前綴 | 用途 |
+| --- | --- |
+| `feat:` | 新功能 |
+| `fix:` | 修 bug |
+| `docs:` | 文件 |
+| `style:` | 樣式調整，不影響邏輯 |
+| `test:` | 測試 |
+| `refactor:` | 重構 |
+
+### 三、發 PR：feature → test
+
+**發 PR 前的檢查清單：**
+
+- [ ] 已合併最新的 `test`（第一步）
+- [ ] `npm test` 全部通過
+- [ ] 實際開網頁或呼叫 API 試過功能
+- [ ] 沒有不該提交的檔案，例如 `.env` 或除錯用的程式
+
+**方法 A：用 `gh` 指令**（需先安裝 GitHub CLI 並執行 `gh auth login`）
+
+```bash
+gh pr create --base test --head feature/<名字> \
+  --title "feat: 新增 xxx 功能" \
+  --body "## 修改內容
+- ...
+
+## 測試方式
+- npm test 通過
+- ..."
+```
+
+**方法 B：在 GitHub 網頁操作**
+
+1. 進入 GitHub 專案頁面，點 **Compare & pull request**。
+2. 設定方向：`base: test` ← `compare: feature/<名字>`。⚠️ base 預設可能是 `main`，記得改成 `test`。
+3. 填寫標題和說明，點 **Create pull request**。
+
+### 四、Code Review 與合併
+
+```bash
+gh pr list                  # 查看目前開啟的 PR
+gh pr list --state all      # 查看所有 PR（含已合併、已關閉）
+gh pr view <編號>           # 查看某個 PR 的內容
+gh pr diff <編號>           # 查看修改了哪些程式
+gh pr checkout <編號>       # 切到該 PR 的分支，在本地測試
+gh pr review <編號> --approve  # 核准
+gh pr merge <編號> --merge     # 合併（或在網頁上按 Merge pull request）
+```
+
+- 組員 review 沒問題後才合併，盡量不要自己核准自己的 PR。
+- 被要求修改時，在同一個分支繼續 commit 和 push，PR 會自動更新，不用重開。
+
+### 五、合併後：通知組員同步
+
+PR 合併進 `test` 後，其他人要重做第一步，把最新的 `test` 合併到自己的分支。
+
+### 六、上線：test → main
+
+`test` 上的功能都測試沒問題後，由專案負責人發 PR：
+
+```bash
+gh pr create --base main --head test \
+  --title "release: 第一版上線" \
+  --body "包含 PR #1 ~ #N 的功能"
+```
+
+### ⚠️ PR 注意事項
+
+1. **PR 的 base 一定要確認。** 功能分支要發到 `test`，不能直接發到 `main`。
+2. **不要直接 push 到 `test` 或 `main`。** 一律透過 PR，可以在 GitHub 設定 Branch protection 強制執行。
+3. **`feature/test` 只用來同步。** 不要在上面 commit，也不要拿它發 PR。
+4. **一個 PR 只做一件事。** 改動越小越容易 review，出問題也好回復。
+5. **合併後跑測試。** 沒有衝突不代表程式沒壞。
+6. **刪除檔案要特別說明。** PR 中刪除的檔案，合併後在 `test` 上也會被刪掉，要在 PR 說明中寫出來。
+
+---
+
 ## 📝 常用 Git 指令速查表 (Cheat Sheet)
 
 | 動作目的 | 終端機指令 (Terminal) |
@@ -107,3 +222,111 @@ git push -u origin feature/ming
 | **暫存所有修改** | `git add .` |
 | **提交版本紀錄** | `git commit -m "你的更新說明"` |
 | **推送到遠端分支** | `git push origin <分支名稱>` |
+
+---
+
+## 🔀 本地與遠端分支切換指令
+
+### 1. 查看分支
+
+```bash
+git branch            # 列出本地分支（* 為目前所在分支）
+git branch -r         # 列出遠端分支（如 origin/main）
+git branch -a         # 本地 + 遠端全部列出
+git branch -vv        # 查看每個本地分支追蹤哪個遠端分支，以及領先/落後幾個 commit
+git remote -v         # 查看遠端名稱與網址
+```
+
+### 2. 更新遠端資訊
+
+```bash
+git fetch                  # 抓取遠端最新狀態，不會改動你的檔案
+git fetch --prune          # 同時清除遠端已刪除分支的本地紀錄（origin/xxx）
+```
+
+> ⚠️ `git branch -r` 顯示的是**上次 fetch 時**的遠端狀態，看不到同事剛推上去的分支時，請先 `git fetch`。
+
+### 3. 切換本地分支
+
+```bash
+git switch feature/test    # 新版寫法（推薦）
+git checkout feature/test  # 舊版寫法，效果相同
+git switch -               # 切回上一個分支
+```
+
+### 4. 將遠端分支拉到本地並切換
+
+```bash
+# 本地沒有同名分支時，Git 會自動建立並追蹤 origin/feature/jin
+git switch feature/jin
+
+# 明確指定追蹤的遠端分支
+git switch -c feature/jin --track origin/feature/jin
+git checkout -b feature/jin origin/feature/jin    # 舊寫法
+```
+
+> ⚠️ 不要直接 `git checkout origin/feature/jin`，這樣會進入 **detached HEAD** 狀態，在上面做的 commit 不屬於任何分支，很容易遺失。
+
+### 5. 建立本地新分支並推到遠端
+
+```bash
+git switch -c feature/ming feature/test  # 從 feature/test 建立新分支
+git push -u origin feature/ming     # 第一次推送加 -u 建立追蹤關係
+git push                            # 之後直接 push 即可
+```
+
+### 6. 同步本地與遠端
+
+```bash
+git pull                   # 等於 fetch + merge
+git pull --rebase          # 等於 fetch + rebase，歷史較乾淨
+git branch -u origin/test  # 補設/修改目前分支追蹤的遠端分支
+```
+
+### 7. 刪除分支
+
+```bash
+git branch -d feature/ming            # 刪除本地分支（已合併才可刪）
+git branch -D feature/ming            # 強制刪除本地分支（未合併內容會遺失）
+git push origin --delete feature/ming # 刪除遠端分支
+```
+
+### 8. 切換/修改遠端網址（remote）
+
+```bash
+git remote set-url origin git@github.com:ShihHsun/zh-converter.git  # 換網址（如 HTTPS 改 SSH）
+git remote add upstream <url>       # 新增另一個遠端（如 fork 的原始專案）
+git remote rename origin old-origin # 重新命名遠端
+git remote remove upstream          # 移除遠端
+```
+
+### ⚠️ 注意事項
+
+1. **切換前先確認工作區乾淨**：先執行 `git status`。有未 commit 的修改時，切換可能失敗，或把修改帶到另一個分支。可以先暫存：
+   ```bash
+   git stash            # 暫存修改
+   git switch feature/test
+   git stash pop        # 回來後再取出
+   ```
+2. **先 fetch 再切換**：避免看不到新分支，或拿到舊版本。
+3. **不要 checkout `origin/xxx`**：遠端分支請用 `git switch xxx` 建立本地追蹤分支。
+4. **第一次 push 記得加 `-u`**：之後才能直接 `git pull` / `git push`。
+5. **確認自己在哪個分支再 commit**：避免把修改直接提交到 `main` 或 `feature/test`，應在 `feature/*` 開發後發 PR。
+6. **`-D` 與 `--delete` 要小心**：強制刪除前，先確認內容已合併或確定不需要。
+7. **不要對共用分支 rebase / force push**：改寫已推送的歷史會打亂其他人的本地版本。真的需要時，請用 `git push --force-with-lease`，比 `--force` 安全。
+
+### 📋 常用流程範例
+
+```bash
+# 開始新功能
+git switch feature/test
+git pull
+git switch -c feature/xxx
+# ...修改、commit...
+git push -u origin feature/xxx
+
+# 接手同事的分支
+git fetch
+git switch feature/jin
+git pull
+```
