@@ -12,5 +12,15 @@
       "namespace_id": "1001",
       "simple": { "limit": 30, "period": 60 }
     }
-  ]
+  ],
+  // Preview 部署（wrangler preview）用的設定：namespace_id 跟正式環境分開，避免預覽流量佔用正式的額度
+  "previews": {
+    "ratelimits": [
+      {
+        "name": "RATE_LIMITER",
+        "namespace_id": "1002",
+        "simple": { "limit": 30, "period": 60 }
+      }
+    ]
+  }
 }
