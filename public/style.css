@@ -240,18 +240,19 @@ body[data-direction="tw-to-cn"] .scene {
   margin-bottom: 14px;
 }
 
-/* Noto Serif TC 沒有「简」等簡體專用字，改由 Noto Serif SC 補上，才有粗體 */
+/* 標題為 LOGO 圖片；字型設定只用在圖片載入失敗、改顯示 alt 文字時 */
 h1 {
   margin: 0;
   font-family: "Noto Serif TC", "Noto Serif SC", serif;
   font-weight: 900;
   font-size: 2.25rem;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
-  background: linear-gradient(90deg, var(--src-strong), var(--dst-strong));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+}
+
+.logo {
+  display: block;
+  width: auto;
+  height: 56px;
+  margin: 0 auto;
 }
 
 .subtitle {
@@ -341,6 +342,7 @@ h1 {
   font-weight: 700;
 }
 
+/* Noto Serif TC 沒有「简」等簡體專用字，改由 Noto Serif SC 補上，才有粗體 */
 .badge {
   display: grid;
   place-items: center;
@@ -626,6 +628,10 @@ button.secondary:hover:not(:disabled) {
 
   h1 {
     font-size: 2rem;
+  }
+
+  .logo {
+    height: 48px;
   }
 
   .panes {

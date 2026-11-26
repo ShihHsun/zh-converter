@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="繁簡轉換">
+  <title>繁簡轉換</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c5cff" />
+      <stop offset="0.5" stop-color="#4a8be3" />
+      <stop offset="1" stop-color="#1fae9b" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="136" fill="url(#bg)" />
+  <g fill="none" stroke="#fff" stroke-width="32" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 左半：簡體「门」的點與豎 -->
+    <path d="M120 106 L150 144" />
+    <path d="M118 202 V408" />
+    <!-- 右半：繁體「門」的右扇，橫筆往左延伸與「门」共用 -->
+    <path d="M204 106 H394 V380 Q394 408 366 408 H356" />
+    <path d="M272 106 V238 H394" />
+    <path d="M272 172 H394" />
+  </g>
+  <!-- 門中的對調箭頭 -->
+  <g fill="none" stroke="#ffcf8f" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M176 304 H306 M280 278 L306 304 L280 330" />
+    <path d="M306 378 H176 M202 352 L176 378 L202 404" />
+  </g>
+</svg>
