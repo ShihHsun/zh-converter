@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>繁簡轉換簡報</title>
+  <link rel="icon" type="image/svg+xml" href="../public/logo/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../public/logo/favicon-32.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" />
@@ -146,6 +148,8 @@
     .i-cn { background: linear-gradient(135deg, var(--cn), var(--cn-accent)); }
     .i-tw { background: linear-gradient(135deg, var(--tw), var(--tw-accent)); }
     .i-mix { background: linear-gradient(135deg, var(--cn), var(--tw)); }
+    /* 組員名稱方塊：放完整名字，寬度一致 */
+    .icon.member { width: 120px; font-size: 20px; }
 
     .card p { font-size: 18px; line-height: 1.65; color: var(--muted); }
 
@@ -208,6 +212,7 @@
     /* ===== 封面 ===== */
     .cover { justify-content: center; align-items: flex-start; }
     .cover h1 { font-size: 112px; line-height: 1.1; letter-spacing: 0.04em; }
+    .cover h1 img { display: block; height: 150px; width: auto; }
     .cover .sub { font-size: 30px; margin-top: 18px; color: var(--muted); }
     .cover .chips { display: flex; gap: 12px; margin-top: 44px; flex-wrap: wrap; }
     .chip {
@@ -218,29 +223,15 @@
       border: 1px solid var(--card-border);
       font-weight: 500;
     }
-    .cover .big-chars {
+    .cover .cover-icon {
       position: absolute;
-      right: 70px;
+      right: 110px;
       top: 50%;
+      width: 360px;
+      height: 360px;
       transform: translateY(-50%);
-      display: flex;
-      align-items: center;
-      gap: 26px;
-      font-family: "Noto Serif TC", serif;
-      font-weight: 900;
+      filter: drop-shadow(0 24px 50px rgba(90, 70, 150, 0.3));
     }
-    .big-chars .char {
-      width: 190px;
-      height: 190px;
-      border-radius: 40px;
-      display: grid;
-      place-items: center;
-      font-size: 120px;
-      color: #fff;
-      box-shadow: 0 20px 50px rgba(90, 70, 150, 0.25);
-    }
-    .big-chars .arrow { font-size: 56px; color: var(--muted); animation: swing 2.4s ease-in-out infinite; }
-    @keyframes swing { 0%, 100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
 
     /* ===== 對照卡 ===== */
     .pair { display: flex; align-items: center; gap: 14px; font-size: 26px; margin-bottom: 14px; }
@@ -318,6 +309,7 @@
     .end { justify-content: center; align-items: center; text-align: center; }
     .end h1 { font-size: 96px; }
     .end .lead { margin-top: 20px; }
+    .end .end-logo { width: 120px; height: 120px; margin-bottom: 24px; }
 
     /* ===== 控制列 ===== */
     .progress {
@@ -341,11 +333,15 @@
     .brand {
       position: absolute;
       left: 80px;
-      bottom: 22px;
+      bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 15px;
       color: var(--muted);
       z-index: 5;
     }
+    .brand img { width: 24px; height: 24px; }
 
     .nav {
       position: fixed;
@@ -411,7 +407,6 @@
 
     @media (prefers-reduced-motion: reduce) {
       .slide, .progress { transition: none; }
-      .big-chars .arrow { animation: none; }
     }
   </style>
 </head>
@@ -424,20 +419,59 @@
       <!-- 1. 封面 -->
       <section class="slide cover">
         <p class="eyebrow">HEX SCHOOL · 團隊專案</p>
-        <h1 class="grad">繁簡轉換</h1>
+        <h1><img src="../public/logo/logo.svg" alt="繁簡轉換" /></h1>
         <p class="sub">簡體 ⇄ 繁體（台灣用詞）</p>
         <div class="chips">
           <span class="chip">opencc-js</span>
           <span class="chip">文字 & 字幕檔</span>
         </div>
-        <div class="big-chars" aria-hidden="true">
-          <div class="char i-cn">简</div>
-          <div class="arrow">⇄</div>
-          <div class="char i-tw">繁</div>
+        <img class="cover-icon" src="../public/logo/logo-icon.svg" alt="" />
+      </section>
+
+      <!-- 2. 組員介紹與分工 -->
+      <section class="slide">
+        <p class="eyebrow">TEAM</p>
+        <h2>組員介紹與分工</h2>
+        <div class="grid" style="grid-template-columns: repeat(5, 1fr); position: absolute; left: 80px; right: 80px; top: 50%; transform: translateY(-50%);">
+          <div class="card">
+            <div class="icon member i-cn">Hsun</div>
+            <ul class="points">
+              <li>專案結構建立</li>
+              <li>Cloudflare 部署</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="icon member i-tw">awei</div>
+            <ul class="points">
+              <li>前端畫面與功能串接</li>
+              <li>簡報製作</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="icon member i-mix">Chloe</div>
+            <ul class="points">
+              <li>設計 API 端點與回應格式</li>
+              <li>API 測試</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="icon member i-cn">Gloria</div>
+            <ul class="points">
+              <li>文字轉換邏輯</li>
+              <li>文字轉換測試</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="icon member i-tw">JinL</div>
+            <ul class="points">
+              <li>文字檔與字幕檔轉換</li>
+              <li>檔案轉換測試</li>
+            </ul>
+          </div>
         </div>
       </section>
 
-      <!-- 2. 為什麼做 -->
+      <!-- 3. 為什麼做 -->
       <section class="slide">
         <p class="eyebrow">WHY</p>
         <h2>繁簡轉換，不只是「換字形」</h2>
@@ -459,7 +493,7 @@
         </div>
       </section>
 
-      <!-- 3. 功能 -->
+      <!-- 4. 功能 -->
       <section class="slide">
         <p class="eyebrow">FEATURES</p>
         <h2>我們做了什麼</h2>
@@ -472,7 +506,7 @@
           <div class="card">
             <div class="icon i-tw">檔</div>
             <h3>字幕檔轉換</h3>
-            <p>上傳 <code>.srt</code>／<code>.txt</code>（最大 1MB），直接下載轉換好的檔案。</p>
+            <p>上傳 <code>.srt</code>／<code>.txt</code>，直接下載轉換好的檔案。</p>
           </div>
           <div class="card">
             <div class="icon i-mix">碼</div>
@@ -482,22 +516,22 @@
           <div class="card">
             <div class="icon i-cn">修</div>
             <h3>修正規則</h3>
-            <p>針對字典已知會轉錯的寫法，在轉換後再修正一次。</p>
+            <p>針對字典已知會轉錯的寫法，在轉換後再修正一次。<br>例如:「干你什么事」會先被轉成「幹你什麼事」，但這裡的「干」是「關係」的意思，所以再修正成「干你什麼事」。</p>
           </div>
         </div>
       </section>
 
-      <!-- 4. 技術選型 -->
+      <!-- 5. 技術選型 -->
       <section class="slide">
         <p class="eyebrow">TECH STACK</p>
         <h2>技術選型</h2>
-        <div class="grid g3 fill">
+        <div class="grid g2 fill">
           <div class="card">
             <h3>後端</h3>
             <ul class="points">
               <li><b>Node.js 18+</b>（CommonJS）</li>
               <li><b>Express 5</b>：非同步錯誤自動交給 errorHandler，controller 不用寫 try/catch</li>
-              <li><b>multer</b>：在記憶體中處理上傳檔</li>
+              <li><b>multer</b>：在記憶體中處理 <code>multipart/form-data</code> 格式的檔案上傳</li>
               <li><b>cors</b>、<b>dotenv</b></li>
             </ul>
           </div>
@@ -509,18 +543,10 @@
               <li><code>CustomConverter</code>：套用我們自己的修正規則</li>
             </ul>
           </div>
-          <div class="card">
-            <h3>前端與測試</h3>
-            <ul class="points">
-              <li>原生 HTML / CSS / JS，由 Express 直接提供 <code>public/</code></li>
-              <li><b>node --test</b>：用內建的測試執行器，不另外裝套件</li>
-              <li>Postman 集合，方便手動測試</li>
-            </ul>
-          </div>
         </div>
       </section>
 
-      <!-- 5. 架構 -->
+      <!-- 6. 架構 -->
       <section class="slide">
         <p class="eyebrow">ARCHITECTURE</p>
         <h2>一個請求的旅程</h2>
@@ -560,7 +586,7 @@
         </div>
       </section>
 
-      <!-- 6. API -->
+      <!-- 7. API -->
       <section class="slide">
         <p class="eyebrow">API</p>
         <h2>API 一覽</h2>
@@ -593,7 +619,7 @@
         </div>
       </section>
 
-      <!-- 7. 轉換核心 -->
+      <!-- 8. 轉換核心 -->
       <section class="slide">
         <p class="eyebrow">CORE</p>
         <h2>轉換核心：兩段式轉換</h2>
@@ -625,7 +651,7 @@ converters[key] = (text) =&gt;
         </div>
       </section>
 
-      <!-- 8. 修正規則的取捨 -->
+      <!-- 9. 修正規則的取捨 -->
       <section class="slide">
         <p class="eyebrow">LESSON LEARNED</p>
         <h2>修正規則的取捨：「於小姐」事件</h2>
@@ -654,7 +680,7 @@ converters[key] = (text) =&gt;
         </div>
       </section>
 
-      <!-- 9. 編碼判斷 -->
+      <!-- 10. 編碼判斷 -->
       <section class="slide">
         <p class="eyebrow">FILE ENCODING</p>
         <h2>上傳的檔案是什麼編碼？</h2>
@@ -677,7 +703,7 @@ converters[key] = (text) =&gt;
         </div>
       </section>
 
-      <!-- 10. SRT -->
+      <!-- 11. SRT -->
       <section class="slide">
         <p class="eyebrow">SUBTITLES</p>
         <h2>字幕檔：只轉換文字，不動時間軸</h2>
@@ -705,11 +731,11 @@ converters[key] = (text) =&gt;
         </div>
       </section>
 
-      <!-- 11. 測試 -->
+      <!-- 12. 測試 -->
       <section class="slide">
         <p class="eyebrow">TESTING</p>
-        <h2>自動化測試</h2>
-        <div class="grid g3" style="margin-bottom: 22px;">
+        <h2>測試</h2>
+        <div class="grid g3" style="position: absolute; left: 80px; right: 80px; top: 50%; transform: translateY(-50%);">
           <div class="card">
             <h3><code>converterService.test.js</code></h3>
             <p>轉換方向、慣用詞、修正規則，以及「屬於小姐」這類不能被誤改的詞</p>
@@ -723,31 +749,15 @@ converters[key] = (text) =&gt;
             <p>完整走過每個端點：成功、驗證失敗、頻率限制、檔案下載</p>
           </div>
         </div>
-        <div class="grid g2 fill">
-<pre><span class="c"># 全部測試</span>
-npm test
-
-<span class="c"># 只跑單一測試</span>
-node --test --test-name-pattern=<span class="s">"GBK"</span> \
-  tests/fileService.test.js</pre>
-          <div class="card">
-            <h3>測試小技巧</h3>
-            <ul class="points">
-              <li>設定在 require 時就讀取，所以要<b>先設好環境變數再 require app</b></li>
-              <li><code>docs/samples/</code> 放了真實的 Big5、GBK、空檔與 .srt 範例</li>
-              <li>「轉過去再轉回來一樣」<b>不代表</b>轉換正確</li>
-            </ul>
-          </div>
-        </div>
       </section>
 
-      <!-- 12. 現場示範 -->
+      <!-- 13. 現場示範 -->
       <section class="slide end">
         <p class="eyebrow">LIVE DEMO</p>
         <h1 class="grad">現場示範</h1>
       </section>
 
-      <!-- 13. 已知限制與未來 -->
+      <!-- 14. 已知限制與未來（暫時註解掉）
       <section class="slide">
         <p class="eyebrow">WHAT'S NEXT</p>
         <h2>已知限制與未來方向</h2>
@@ -771,15 +781,17 @@ node --test --test-name-pattern=<span class="s">"GBK"</span> \
           </div>
         </div>
       </section>
+      -->
 
-      <!-- 14. 結尾 -->
+      <!-- 15. 結尾 -->
       <section class="slide end">
+        <img class="end-logo" src="../public/logo/logo-icon.svg" alt="" />
         <p class="eyebrow">THANK YOU</p>
         <h1 class="grad">謝謝聆聽</h1>
         <p class="lead">Q &amp; A</p>
       </section>
 
-      <div class="brand">繁簡轉換 · zh-converter</div>
+      <div class="brand"><img src="../public/logo/logo-icon.svg" alt="" />繁簡轉換 · zh-converter</div>
       <div class="counter" id="counter"></div>
       <div class="progress" id="progress"></div>
     </div>
